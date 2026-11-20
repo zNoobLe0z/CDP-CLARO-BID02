@@ -4,7 +4,15 @@ from decimal import Decimal
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, field_validator
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    StrictBool,
+    StrictInt,
+    field_validator,
+)
 
 
 def today():
@@ -15,6 +23,17 @@ def date_allowed(value: date):
     if value > today():
         raise ValueError("A execução não pode estar no futuro.")
     return value
+
+
+def iso_date(value):
+    if type(value) is date:
+        return value
+    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        raise ValueError("Informe a data no formato YYYY-MM-DD.")
+    return value
+
+
+IsoDate = Annotated[date, BeforeValidator(iso_date)]
 
 
 def decimal_text(value: str, places=6):
@@ -67,7 +86,7 @@ Entry = Annotated[PercentageEntry | UnitEntry, Field(discriminator="measurement_
 
 
 class ProductionBatch(Input):
-    execution_date: date
+    execution_date: IsoDate
     observation: str = Field(default="", max_length=1000)
     entries: list[Entry] = Field(min_length=1, max_length=200)
     _date = field_validator("execution_date")(date_allowed)

@@ -57,6 +57,14 @@ def test_rejects_duplicates_and_future_dates():
     )
 
 
+@pytest.mark.parametrize(
+    "value", [0, 1732060800, "1732060800", "2026-11-20T00:00:00", "2026-02-30"]
+)
+def test_dates_must_be_calendar_dates(value):
+    with pytest.raises(ValidationError):
+        ProductionBatch.model_validate(batch(execution_date=value))
+
+
 def test_supabase_validates_identity_remotely_not_from_user_metadata():
     user_id = str(uuid4())
 

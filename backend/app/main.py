@@ -1,6 +1,5 @@
 import logging
 from contextlib import asynccontextmanager
-from datetime import date
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -17,7 +16,7 @@ from . import mutations, queries
 from .auth import db, editor, membership
 from .errors import DomainError, invalid, missing
 from .models import Company, Membership, Workforce, WorkforceRevision
-from .schemas import Correction, ProductionBatch, WorkforceInput, today
+from .schemas import Correction, IsoDate, ProductionBatch, WorkforceInput, today
 from .settings import Settings, database_engine
 
 logger = logging.getLogger("cdp.api")
@@ -234,8 +233,8 @@ def create_app(settings: Settings | None = None, engine=None, auth_http=None):
         filters: Filters,
         page: int = Query(1, ge=1),
         page_size: int = Query(10, ge=1, le=100),
-        start_date: date | None = None,
-        end_date: date | None = None,
+        start_date: IsoDate | None = None,
+        end_date: IsoDate | None = None,
         search: str = Query("", max_length=200),
         status: Literal["", "active", "corrected"] = "",
     ):
@@ -252,7 +251,7 @@ def create_app(settings: Settings | None = None, engine=None, auth_http=None):
 
     @app.get(prefix + "/dashboard", tags=["Dashboard"])
     def dashboard(
-        project_id: str, reference_date: date, session: Db, _member: Member, filters: Filters
+        project_id: str, reference_date: IsoDate, session: Db, _member: Member, filters: Filters
     ):
         if reference_date > today():
             invalid("A data de referência não pode estar no futuro.")
@@ -272,8 +271,8 @@ def create_app(settings: Settings | None = None, engine=None, auth_http=None):
     @app.get(prefix + "/workforce", tags=["Workforce"])
     def workforce(
         project_id: str,
-        start_date: date,
-        end_date: date,
+        start_date: IsoDate,
+        end_date: IsoDate,
         session: Db,
         _member: Member,
         company_id: str = Query("", max_length=100),
@@ -304,7 +303,7 @@ def create_app(settings: Settings | None = None, engine=None, auth_http=None):
 
     @app.put(prefix + "/workforce/{execution_date}/{company_id}", tags=["Workforce"])
     def save_workforce(
-        execution_date: date,
+        execution_date: IsoDate,
         company_id: str,
         body: WorkforceInput,
         key: IdempotencyKey,

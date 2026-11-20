@@ -1,5 +1,3 @@
-import os
-
 from alembic import context
 from sqlalchemy import text
 
@@ -7,9 +5,8 @@ from app.models import Base
 from app.settings import Settings, database_engine
 
 settings = Settings()
-url = os.environ.get("MIGRATION_DATABASE_URL") or (
-    settings.database_url.get_secret_value() if settings.database_url else None
-)
+connection_url = settings.migration_database_url or settings.database_url
+url = connection_url.get_secret_value() if connection_url else None
 if not url:
     raise RuntimeError("Configure MIGRATION_DATABASE_URL ou DATABASE_URL antes de migrar.")
 
