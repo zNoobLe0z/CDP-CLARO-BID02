@@ -28,11 +28,11 @@ npm run format
 
 - `VITE_DATA_SOURCE=demo` é o padrão. Dados fictícios, salvos apenas em memória até recarregar. Não há usuário autenticado, banco ou indicadores oficiais neste modo.
 - `VITE_DATA_SOURCE=api` usa `VITE_API_BASE_URL` e `VITE_PROJECT_ID`. Não há fallback automático para dados fictícios em caso de falha.
-- Login ainda não implementado: antes de usar a API, conectar `configureAccessToken` à sessão atual do provedor de autenticação. Sem token, o cliente bloqueia a chamada com erro explícito.
+- Login implementado com Supabase Auth. No modo API, configurar `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY`; contas devem ser previamente liberadas. A API também deve responder a `/projects/{id}/me` com o perfil da obra. Sem configuração ou sessão, os dados reais ficam bloqueados.
 - Toda variável `VITE_*` é pública. Nunca colocar segredos administrativos nela.
-- Produção tem cascata, medição percentual adicional, checklist, prévia de quantidade e gravação em lote. Dashboard, Efetivo e Cadastros têm somente rotas e estados de preparação.
+- Produção tem cascata, medição percentual adicional, checklist, prévia de quantidade, gravação em lote e confirmação de descarte. Histórico tem filtros, paginação e correções justificadas preservando originais. Dashboard mostra avanço ponderado e produção diária por unidade. Efetivo registra contagens por dia e empresa com revisões. Cadastros permite consultar o escopo e seus pesos, sem edição administrativa nesta etapa.
 - O backend é a autoridade para saldo, arredondamento, autorização, autoria e indicadores. A prévia local é apenas informativa.
-- Não há suporte offline, histórico ou correção nesta entrega. Navegar para outra página descarta formulários não enviados.
+- Não há suporte offline. Demonstração usa dados compartilhados entre as telas, em memória, reiniciados ao recarregar. A integração real depende do backend Python e da homologação do projeto de autenticação. Contratos novos são propostas, não endpoints já disponíveis.
 - Em hospedagem estática, configurar fallback de rotas para `index.html`.
 
 ## Organização
@@ -44,4 +44,4 @@ src/lib/                   Ambiente e cliente HTTP
 src/test/                  Preparação dos testes
 ```
 
-Contrato proposto: [Produção](../docs/api-production.md). Tarefas: [backlog](../docs/frontend-tasks.md).
+Contratos propostos: [Produção](../docs/api-production.md), [histórico](../docs/api-history.md), [dashboard e efetivo](../docs/api-dashboard-workforce.md). [Autenticação](../docs/authentication.md). Tarefas: [backlog](../docs/frontend-tasks.md).

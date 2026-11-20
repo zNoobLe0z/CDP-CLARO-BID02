@@ -48,7 +48,7 @@ O sistema foi arquitetado no padrão comercial (SaaS), separando a inteligência
 
 ## Desenvolvimento do frontend
 
-A base React com TypeScript, Vite e Tailwind está em [frontend](frontend/README.md).
+O frontend React com TypeScript, Vite e Tailwind está em [frontend](frontend/README.md).
 
 ```sh
 cd frontend
@@ -56,7 +56,7 @@ npm ci
 npm run dev
 ```
 
-Requer Node.js 24 e npm 11. O padrão é demonstração em memória, sem conexão com banco e sem autenticação real. A tela inicial permite validar o apontamento; as demais áreas estão em preparação.
+Requer Node.js 24 e npm 11. O padrão é demonstração em memória, sem conexão com banco. Produção, histórico, correções, dashboard, efetivo e consulta de escopo compartilham dados fictícios. Login com Supabase está implementado para o modo API, mas exige configuração do projeto e backend compatível. Edição administrativa de cadastros, cronograma, produtividade individual e qualidade permanecem pendentes.
 
 - [Contrato proposto da API de Produção](docs/api-production.md)
 - [Tarefas e versionamento do frontend](docs/frontend-tasks.md)

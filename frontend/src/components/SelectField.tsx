@@ -8,6 +8,7 @@ interface Props {
   disabled?: boolean
   loading?: boolean
   onChange: (value: string) => void
+  emptyLabel?: string
 }
 export function SelectField({
   id,
@@ -17,6 +18,7 @@ export function SelectField({
   disabled,
   loading,
   onChange,
+  emptyLabel = 'Selecione',
 }: Props) {
   return (
     <label className="grid gap-2 text-sm font-semibold" htmlFor={id}>
@@ -27,7 +29,7 @@ export function SelectField({
         disabled={disabled || loading}
         onChange={(event) => onChange(event.target.value)}
       >
-        <option value="">{loading ? 'Carregando…' : 'Selecione'}</option>
+        <option value="">{loading ? 'Carregando…' : emptyLabel}</option>
         {options.map((option) => (
           <option key={option.id} value={option.id}>
             {option.name}

@@ -3,6 +3,8 @@ import { validateEntry, localDate, validExecutionDate } from './measurement'
 import { initialCatalog } from './catalog'
 import type { BatchResult, ProductionService } from './types'
 import type { HistoryService, ProductionRecord } from './history-types'
+import type { DashboardService } from '../dashboard/types'
+import { calculateDashboard } from '../dashboard/calculate'
 
 const clone = <T>(value: T): T => structuredClone(value)
 const decimal = (value: number) => String(Number(value.toFixed(6)))
@@ -14,7 +16,9 @@ const fail = (
   throw new ApiError(message, status, code)
 }
 
-export function createDemoService(): ProductionService & HistoryService {
+export function createDemoService(): ProductionService &
+  HistoryService &
+  DashboardService {
   let items = initialCatalog()
   let records: ProductionRecord[] = []
   const results = new Map<string, { payload: string; result: BatchResult }>()
@@ -60,6 +64,8 @@ export function createDemoService(): ProductionService & HistoryService {
       ),
     )
   return {
+    dashboard: async (filters) =>
+      clone(calculateDashboard(items, records, filters)),
     floors: async () => [
       { id: 'floor-2', name: '2º andar' },
       { id: 'floor-3', name: '3º andar' },

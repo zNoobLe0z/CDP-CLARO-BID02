@@ -2,6 +2,7 @@ import { config } from '../../lib/config'
 import { request } from '../../lib/api'
 import { createDemoService } from './demo-service'
 import type { BatchResult, Option, ProductionService, ScopeItem } from './types'
+import type { DashboardData, DashboardService } from '../dashboard/types'
 import type {
   CatalogItem,
   HistoryPage,
@@ -14,7 +15,12 @@ const query = (values: Record<string, string>) =>
   new URLSearchParams(values).toString()
 const list = async <T>(path: string, signal?: AbortSignal) =>
   (await request<{ items: T[] }>(path, { signal })).items
-const api: ProductionService & HistoryService = {
+const api: ProductionService & HistoryService & DashboardService = {
+  dashboard: (filters, signal) =>
+    request<DashboardData>(
+      `${project}/dashboard?${new URLSearchParams(Object.entries(filters).filter(([, value]) => Boolean(value))).toString()}`,
+      { signal },
+    ),
   catalog: (signal) => list<CatalogItem>(`${project}/scope-catalog`, signal),
   history: (filters, signal) =>
     request<HistoryPage>(

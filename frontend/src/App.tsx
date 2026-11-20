@@ -19,6 +19,9 @@ import { useAuth } from './features/auth/context'
 import { HistoryPage } from './features/production/HistoryPage'
 import { useProjectAccess } from './features/auth/access'
 import { QueryFeedback } from './components/QueryFeedback'
+import { DashboardPage } from './features/dashboard/DashboardPage'
+import { WorkforcePage } from './features/workforce/WorkforcePage'
+import { CatalogPage } from './features/catalog/CatalogPage'
 
 const links = [
   { to: '/dashboard', label: 'Dashboard', icon: ChartNoAxesCombined },
@@ -169,33 +172,9 @@ function Workspace() {
             <Route path="/" element={<Navigate to="/producao" replace />} />
             <Route path="/producao" element={<ProductionPage />} />
             <Route path="/historico" element={<HistoryPage />} />
-            <Route
-              path="/dashboard"
-              element={
-                <PendingPage
-                  title="Dashboard"
-                  description="Acompanhe o avanço físico por disciplina e ambiente."
-                />
-              }
-            />
-            <Route
-              path="/efetivo"
-              element={
-                <PendingPage
-                  title="Efetivo"
-                  description="Controle a presença diária das equipes por empresa."
-                />
-              }
-            />
-            <Route
-              path="/cadastros"
-              element={
-                <PendingPage
-                  title="Cadastros"
-                  description="Organize os ambientes e o escopo de produção."
-                />
-              }
-            />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/efetivo" element={<WorkforcePage />} />
+            <Route path="/cadastros" element={<CatalogPage />} />
             <Route
               path="*"
               element={
