@@ -37,7 +37,7 @@
 - [ ] Validar com a equipe o critério de peso, prazos retroativos, permissões de correção, precisão e volume das consultas.
 - [ ] Realizar piloto em canteiro com dados reais, permissões e cópias de segurança.
 
-As marcações concluídas representam a implementação do frontend, seus adaptadores e sua demonstração. Não significam que o backend ou o banco foram implementados. As sugestões de branches anteriores continuam úteis para dividir a homologação e os próximos incrementos.
+As marcações desta seção representam a entrega de frontend. Posteriormente, a branch `backend/production-api` implementou API e schema PostgreSQL, com migrações, controle de concorrência e testes de integração. A homologação no Supabase remoto continua pendente; consulte `backend/README.md` e `docs/verification-api.md`. As sugestões de branches anteriores continuam úteis para dividir a homologação e os próximos incrementos.
 
 ## Fluxo de trabalho
 

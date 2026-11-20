@@ -1,6 +1,6 @@
-# Contrato proposto da API de Produção
+# Contrato da API de Produção
 
-Proposta para validação com o responsável pelo backend. Ainda não há API implementada neste repositório. Os tipos em `frontend/src/features/production/types.ts` e o adaptador HTTP seguem este documento.
+Implementado em `backend/` na branch `backend/production-api`, com validação local em PostgreSQL. Os tipos em `frontend/src/features/production/types.ts` e o adaptador HTTP seguem este documento. A homologação com o projeto Supabase real e a engenharia permanece necessária; consulte `backend/README.md` e `docs/verification-api.md`.
 
 ## Convenções
 
@@ -88,4 +88,4 @@ FastAPI deve normalizar seus erros de validação para o envelope acima. Interfa
 
 ## Fora desta entrega
 
-Login real, histórico paginado, estornos/correções, avanço ponderado, efetivo e cadastros administrativos. Esses contratos serão definidos nas próximas tarefas. Nenhuma tela desta base grava diretamente no Supabase.
+Histórico, correções, avanço ponderado e efetivo também foram implementados no backend e têm contratos próprios. A autenticação valida a identidade pelo serviço Supabase, ainda sem homologação de conta real. Cadastros administrativos/importação e provisionamento remoto permanecem pendentes. Nenhuma tela grava diretamente nas tabelas do Supabase.

@@ -1,6 +1,6 @@
 # Contrato proposto de histórico e correções
 
-Complementa `api-production.md`. Requer validação e implementação na API Python. Os adaptadores do frontend estão implementados; demonstração usa os mesmos formatos em memória. Rotas precedidas de `/api/v1/projects/{project_id}` e protegidas por token e autorização da obra.
+Complementa `api-production.md`. Implementado na API Python em `backend/`, com testes locais em PostgreSQL. A homologação de ambiente real continua pendente. Os adaptadores do frontend estão implementados; demonstração usa os mesmos formatos em memória. Rotas precedidas de `/api/v1/projects/{project_id}` e protegidas por token e autorização da obra.
 
 ## Consultar apontamentos
 

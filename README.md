@@ -8,7 +8,7 @@
 
 O **CDP CLARO (Controle de Produção)** é uma aplicação web desenvolvida especificamente para a gestão e acompanhamento diário da obra CDP BI02 | CLARO. O sistema foi projetado para substituir o uso de pranchetas e planilhas complexas por uma interface ágil e nativa, permitindo que os engenheiros lancem os dados de avanço físico diretamente da frente de serviço.
 
-Além do controle físico da obra, a ferramenta integra o acompanhamento da produtividade por funcionário e o rigoroso controle de qualidade das atividades de *fit-out* corporativo.
+Além do controle físico da obra e do efetivo diário, o projeto prevê evolução para produtividade por funcionário e controle de qualidade das atividades de *fit-out* corporativo.
 
 ## 🎯 Objetivo do Projeto
 
@@ -38,7 +38,7 @@ O sistema foi arquitetado no padrão comercial (SaaS), separando a inteligência
 - React (ou Next.js)
 
 **Backend (Regras de Negócio & API):**
-- Python 3.9+
+- Python 3.12 a 3.14
 - FastAPI (Criação da API REST)
 - Pandas (Processamento de tabelas e cruzamento de dados)
 
@@ -63,4 +63,13 @@ Requer Node.js 24 e npm 11. O padrão é demonstração em memória, sem conexã
 
 ## Backend
 
-A arquitetura prevê uma API Python com FastAPI e PostgreSQL no Supabase. A implementação do backend ainda não está presente neste repositório. Os recursos descritos acima representam os objetivos do produto, não funcionalidades já concluídas.
+A API Python com FastAPI e PostgreSQL está implementada em [backend](backend/README.md). Inclui permissões por obra, consultas em cascata, apontamentos transacionais, histórico/correções, dashboard e efetivo. A integração frontend → API → PostgreSQL foi verificada localmente; configuração de Supabase remoto, hospedagem e homologação com conta real ainda são necessárias. Os recursos de cronograma, produtividade individual, qualidade e administração completa do escopo permanecem objetivos das próximas entregas.
+
+```sh
+cd backend
+uv sync --frozen
+# Configure .env e aplique as migrações conforme backend/README.md
+uv run uvicorn app.main:app --reload
+```
+
+Evidências e limites da integração: [verificação da API](docs/verification-api.md).
