@@ -12,6 +12,9 @@ import {
 import { config } from './lib/config'
 import { ProductionPage } from './features/production/ProductionPage'
 import { PageHeader } from './components/PageHeader'
+import { LoginPage } from './features/auth/LoginPage'
+import { RequireSession } from './features/auth/RequireSession'
+import { useAuth } from './features/auth/context'
 
 const links = [
   { to: '/dashboard', label: 'Dashboard', icon: ChartNoAxesCombined },
@@ -47,8 +50,9 @@ function PendingPage({
   )
 }
 
-export default function App() {
+function Workspace() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const auth = useAuth()
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[240px_1fr]">
       <a className="skip-link" href="#main">
@@ -109,11 +113,28 @@ export default function App() {
           <span className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600">
             {config.demo ? 'Ambiente de demonstração' : 'Integração com API'}
           </span>
+          {!config.demo && (
+            <div className="flex items-center gap-3 text-sm">
+              <span>{auth.session?.user.email}</span>
+              <button
+                className="min-h-11 underline"
+                type="button"
+                onClick={() => void auth.signOut()}
+              >
+                Sair
+              </button>
+            </div>
+          )}
         </header>
         <main
           id="main"
           className="mx-auto max-w-6xl px-5 py-8 sm:px-10 sm:py-10"
         >
+          {auth.error && (
+            <p role="alert" className="mb-5 text-red-700">
+              {auth.error}
+            </p>
+          )}
           {config.demo && (
             <p className="mb-7 border-l-2 border-orange-500 pl-3 text-sm text-slate-600">
               Dados fictícios para validar o fluxo. Os lançamentos ficam apenas
@@ -163,5 +184,21 @@ export default function App() {
         </main>
       </div>
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/*"
+        element={
+          <RequireSession>
+            <Workspace />
+          </RequireSession>
+        }
+      />
+    </Routes>
   )
 }

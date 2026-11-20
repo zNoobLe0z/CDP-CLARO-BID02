@@ -24,7 +24,7 @@ export async function request<T>(
   const token = await getAccessToken()
   if (!token)
     throw new ApiError(
-      'Entre na sua conta para acessar a API. A integração de login ainda está pendente.',
+      'Sua sessão expirou. Entre novamente para acessar a obra.',
       401,
       'AUTH_REQUIRED',
     )
