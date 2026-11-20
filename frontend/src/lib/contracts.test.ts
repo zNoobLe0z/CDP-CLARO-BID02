@@ -14,6 +14,40 @@ afterEach(() => {
   configureAccessToken(async () => null)
   vi.unstubAllGlobals()
 })
+it('envia os cinco níveis da cascata aos filtros de dashboard e histórico', async () => {
+  configureAccessToken(async () => 'test-token')
+  const fetch = vi
+    .fn()
+    .mockImplementation(
+      async () => new Response(JSON.stringify({ items: [], total: 0 })),
+    )
+  vi.stubGlobal('fetch', fetch)
+  const selected = {
+    floor_id: 'floor-2',
+    environment_id: 'room-1',
+    discipline_id: 'finishes',
+    activity_id: 'painting',
+    scope_item_id: 'wall/1',
+  }
+  await productionService.dashboard({
+    ...selected,
+    reference_date: '2026-11-20',
+  })
+  await productionService.history({
+    ...selected,
+    page: 1,
+    page_size: 10,
+    start_date: '',
+    end_date: '',
+    search: '',
+    status: '',
+  })
+  for (const [url] of fetch.mock.calls) {
+    const params = new URL(url).searchParams
+    for (const [key, value] of Object.entries(selected))
+      expect(params.get(key)).toBe(value)
+  }
+})
 
 it('consulta os contratos reais com filtros codificados e token da sessão', async () => {
   configureAccessToken(async () => 'test-token')

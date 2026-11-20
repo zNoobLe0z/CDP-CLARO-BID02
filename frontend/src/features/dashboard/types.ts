@@ -1,4 +1,5 @@
-export interface DashboardFilters {
+import type { ScopeFilters } from '../scope/selection'
+export interface DashboardFilters extends Partial<ScopeFilters> {
   reference_date: string
   floor_id: string
   environment_id: string

@@ -1,11 +1,14 @@
 import { useRef, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowRight, Check, Save } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
 import { UnsavedChangesDialog } from '../../components/UnsavedChangesDialog'
 import { ApiError } from '../../lib/api'
 import { canEdit, useProjectAccess } from '../auth/access'
-import { SelectField } from '../../components/SelectField'
+import { ScopeCascade } from '../scope/ScopeCascade'
+import { useScopeCascade } from '../scope/useScopeCascade'
+import { emptySelection } from '../scope/selection'
+
 import { productionService as service } from './service'
 import {
   buildEntries,
@@ -124,44 +127,16 @@ export function ProductionPage() {
   const queryClient = useQueryClient()
   const access = useProjectAccess()
   const writable = canEdit(access.data?.role)
-  const [selection, setSelection] = useState({
-    floor: '',
-    environment: '',
-    discipline: '',
-    activity: '',
-  })
+  const [selection, setSelection] = useState(emptySelection)
   const [date, setDate] = useState(localDate)
   const [observation, setObservation] = useState('')
   const [draft, setDraft] = useState<Record<string, string>>({})
   const [message, setMessage] = useState('')
   const submission = useRef<{ payload: string; key: string } | null>(null)
   const inFlight = useRef(false)
-  const { floor, environment, discipline, activity } = selection
-  const floors = useQuery({
-    queryKey: ['production', 'floors'],
-    queryFn: ({ signal }) => service.floors(signal),
-  })
-  const environments = useQuery({
-    queryKey: ['production', 'environments', floor],
-    queryFn: ({ signal }) => service.environments(floor, signal),
-    enabled: Boolean(floor),
-  })
-  const disciplines = useQuery({
-    queryKey: ['production', 'disciplines', environment],
-    queryFn: ({ signal }) => service.disciplines(environment, signal),
-    enabled: Boolean(environment),
-  })
-  const activities = useQuery({
-    queryKey: ['production', 'activities', environment, discipline],
-    queryFn: ({ signal }) =>
-      service.activities(environment, discipline, signal),
-    enabled: Boolean(environment && discipline),
-  })
-  const scope = useQuery({
-    queryKey: ['production', 'scope', environment, activity],
-    queryFn: ({ signal }) => service.scope(environment, activity, signal),
-    enabled: Boolean(environment && activity),
-  })
+  const { activity, element } = selection
+  const cascade = useScopeCascade(selection)
+  const scope = cascade.scope
   const mutation = useMutation({
     mutationFn: ({ batch, key }: { batch: ProductionBatch; key: string }) =>
       service.save(batch, key),
@@ -201,7 +176,9 @@ export function ProductionPage() {
     setMessage('')
     mutation.reset()
   }
-  const items = scope.data ?? []
+  const items = cascade.complete
+    ? (scope.data ?? []).filter((item) => !element || item.id === element)
+    : []
   const invalid = items.some(
     (item) =>
       item.measurement_type === 'percentage' &&
@@ -210,13 +187,7 @@ export function ProductionPage() {
   const selectedCount = Object.values(draft).filter((value) =>
     Boolean(value.trim()),
   ).length
-  const queryError = [
-    floors,
-    environments,
-    disciplines,
-    activities,
-    scope,
-  ].find((query) => query.isError)
+  const queryError = cascade.error
   const dateInvalid = !validExecutionDate(date)
   const tooMany = selectedCount > 200
   const serverFields =
@@ -262,6 +233,7 @@ export function ProductionPage() {
         onSubmit={(event) => {
           event.preventDefault()
           if (
+            !cascade.complete ||
             inFlight.current ||
             invalid ||
             dateInvalid ||
@@ -291,99 +263,15 @@ export function ProductionPage() {
             <span className="step">01</span>
             <h2 className="text-lg font-semibold">Frente de serviço</h2>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <SelectField
-              id="floor"
-              label="Andar"
-              value={floor}
-              options={floors.data ?? []}
-              loading={floors.isFetching}
-              onChange={(value) =>
-                changeSelection({
-                  floor: value,
-                  environment: '',
-                  discipline: '',
-                  activity: '',
-                })
-              }
-            />
-            <SelectField
-              id="environment"
-              label="Ambiente"
-              value={environment}
-              options={environments.data ?? []}
-              disabled={!floor}
-              loading={environments.isFetching}
-              onChange={(value) =>
-                changeSelection({
-                  ...selection,
-                  environment: value,
-                  discipline: '',
-                  activity: '',
-                })
-              }
-            />
-            <SelectField
-              id="discipline"
-              label="Disciplina"
-              value={discipline}
-              options={disciplines.data ?? []}
-              disabled={!environment}
-              loading={disciplines.isFetching}
-              onChange={(value) =>
-                changeSelection({
-                  ...selection,
-                  discipline: value,
-                  activity: '',
-                })
-              }
-            />
-            <SelectField
-              id="activity"
-              label="Atividade"
-              value={activity}
-              options={activities.data ?? []}
-              disabled={!discipline}
-              loading={activities.isFetching}
-              onChange={(value) =>
-                changeSelection({ ...selection, activity: value })
-              }
-            />
-          </div>
-          {floor &&
-            !environments.isFetching &&
-            environments.isSuccess &&
-            !environments.data.length && (
-              <p className="mt-4 text-sm text-slate-600">
-                Nenhum ambiente cadastrado neste andar.
-              </p>
-            )}
-          {environment && disciplines.isSuccess && !disciplines.data.length && (
-            <p className="mt-4 text-sm text-slate-600">
-              Nenhuma disciplina cadastrada neste ambiente.
-            </p>
-          )}
-          {discipline && activities.isSuccess && !activities.data.length && (
-            <p className="mt-4 text-sm text-slate-600">
-              Nenhuma atividade cadastrada nesta disciplina.
-            </p>
-          )}
+          <ScopeCascade
+            prefix="production"
+            selection={selection}
+            cascade={cascade}
+            onChange={changeSelection}
+            required
+            disabled={mutation.isPending}
+          />
         </fieldset>
-        {queryError && (
-          <div
-            role="alert"
-            className="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800"
-          >
-            <p>{queryError.error?.message}</p>
-            <button
-              type="button"
-              className="mt-2 min-h-11 underline"
-              onClick={() => void queryError.refetch()}
-            >
-              Tentar novamente
-            </button>
-          </div>
-        )}
         {!activity ? (
           <div className="my-6 flex items-center gap-3 px-2 text-sm text-slate-500">
             <ArrowRight size={18} aria-hidden="true" />
@@ -489,6 +377,7 @@ export function ProductionPage() {
                 type="submit"
                 className="button-primary flex items-center gap-2"
                 disabled={
+                  !cascade.complete ||
                   !selectedCount ||
                   invalid ||
                   dateInvalid ||

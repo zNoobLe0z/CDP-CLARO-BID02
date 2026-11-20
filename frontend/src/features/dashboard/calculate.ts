@@ -1,5 +1,6 @@
 import type { CatalogItem, ProductionRecord } from '../production/history-types'
 import type { DashboardData, DashboardFilters } from './types'
+import { matchesScope } from '../scope/selection'
 
 // Somente para a demonstração. Em modo API, indicadores são calculados pelo backend.
 export function calculateDashboard(
@@ -7,13 +8,7 @@ export function calculateDashboard(
   records: ProductionRecord[],
   filters: DashboardFilters,
 ): DashboardData {
-  const items = catalog.filter(
-    (item) =>
-      (!filters.floor_id || item.floor_id === filters.floor_id) &&
-      (!filters.environment_id ||
-        item.environment_id === filters.environment_id) &&
-      (!filters.discipline_id || item.discipline_id === filters.discipline_id),
-  )
+  const items = catalog.filter((item) => matchesScope(item, filters))
   const active = records.filter(
     (record) =>
       record.status === 'active' &&

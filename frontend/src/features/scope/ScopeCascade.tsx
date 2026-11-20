@@ -63,6 +63,7 @@ export function ScopeCascade({
             }
             disabled={
               disabled ||
+              cascade.queries[index].isError ||
               !cascade.enabled[index] ||
               (index > 0 && cascade.queries[index - 1].isFetching)
             }
@@ -126,7 +127,7 @@ export function ScopeCascade({
           e escolha novamente.
         </p>
       )}
-      {path.length > 0 && (
+      {levels.some((level) => Boolean(selection[level])) && (
         <button
           type="button"
           className="mt-3 min-h-11 text-sm font-semibold underline"

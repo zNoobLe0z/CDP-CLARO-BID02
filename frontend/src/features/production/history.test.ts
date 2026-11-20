@@ -11,6 +11,26 @@ const filters: HistoryFilters = {
   search: '',
   status: '',
 }
+it('restringe o histórico ao andar, ambiente, disciplina, atividade e elemento escolhidos', async () => {
+  const service = createDemoService()
+  const selected = {
+    ...filters,
+    floor_id: 'floor-2',
+    environment_id: 'meeting-1',
+    discipline_id: 'finishes',
+    activity_id: 'painting',
+    scope_item_id: 'wall-east',
+  }
+  const history = await service.history(selected)
+  expect(history.total).toBe(1)
+  expect(history.items[0].scope_item_id).toBe('wall-east')
+  expect(
+    (await service.history({ ...selected, activity_id: 'doors' })).total,
+  ).toBe(0)
+  expect(
+    (await service.history({ ...selected, floor_id: 'floor-3' })).total,
+  ).toBe(0)
+})
 it('preserva o original, ajusta o saldo e repete correção sem duplicar', async () => {
   const service = createDemoService()
   const record = (await service.history({ ...filters, search: 'PAR-01' }))

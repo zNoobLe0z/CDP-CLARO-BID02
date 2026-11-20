@@ -8,6 +8,31 @@ const filters = {
   environment_id: '',
   discipline_id: '',
 }
+it('calcula avanço no contexto da atividade e do elemento, sem incluir outros serviços', async () => {
+  const service = createDemoService()
+  const painting = await service.dashboard({
+    ...filters,
+    activity_id: 'painting',
+  })
+  expect(painting.total_items).toBe(2)
+  expect(painting.overall_percentage).toBe('20.0000')
+  const element = await service.dashboard({
+    ...filters,
+    activity_id: 'painting',
+    scope_item_id: 'wall-east',
+  })
+  expect(element.overall_percentage).toBe('40.0000')
+  expect(element.total_items).toBe(1)
+  expect(
+    (
+      await service.dashboard({
+        ...filters,
+        activity_id: 'doors',
+        scope_item_id: 'wall-east',
+      })
+    ).total_items,
+  ).toBe(0)
+})
 it('calcula pesos sem somar unidades incompatíveis e atualiza após correção', async () => {
   const service = createDemoService()
   const initial = await service.dashboard(filters)

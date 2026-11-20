@@ -61,9 +61,7 @@ it('libera cada nível somente após o anterior e limpa todos os descendentes', 
     'Atividade',
     'Elemento físico',
   ])
-    expect(
-      screen.getByRole('combobox', { name: label }),
-    ).toBeDisabled()
+    expect(screen.getByRole('combobox', { name: label })).toBeDisabled()
   await user.selectOptions(screen.getByLabelText('Andar'), 'a')
   await screen.findByRole('option', { name: 'Sala A' })
   await user.selectOptions(screen.getByLabelText('Ambiente'), 'room-a')

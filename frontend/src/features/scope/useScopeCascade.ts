@@ -11,7 +11,9 @@ export function useScopeCascade(selection: ScopeSelection) {
     queryFn: ({ signal }) => service.floors(signal),
   })
   const floorValid = Boolean(
-    floor && floors.data?.some((option) => option.id === floor),
+    floor &&
+    floors.isSuccess &&
+    floors.data?.some((option) => option.id === floor),
   )
   const environments = useQuery({
     queryKey: [...base, 'environments', floor],
@@ -21,6 +23,7 @@ export function useScopeCascade(selection: ScopeSelection) {
   const environmentValid = Boolean(
     floorValid &&
     environment &&
+    environments.isSuccess &&
     environments.data?.some((option) => option.id === environment),
   )
   const disciplines = useQuery({
@@ -31,6 +34,7 @@ export function useScopeCascade(selection: ScopeSelection) {
   const disciplineValid = Boolean(
     environmentValid &&
     discipline &&
+    disciplines.isSuccess &&
     disciplines.data?.some((option) => option.id === discipline),
   )
   const activities = useQuery({
@@ -42,6 +46,7 @@ export function useScopeCascade(selection: ScopeSelection) {
   const activityValid = Boolean(
     disciplineValid &&
     activity &&
+    activities.isSuccess &&
     activities.data?.some((option) => option.id === activity),
   )
   const scope = useQuery({

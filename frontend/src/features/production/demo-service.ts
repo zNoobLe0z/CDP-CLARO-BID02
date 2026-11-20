@@ -5,6 +5,7 @@ import type { BatchResult, ProductionService } from './types'
 import type { HistoryService, ProductionRecord } from './history-types'
 import type { DashboardService } from '../dashboard/types'
 import { calculateDashboard } from '../dashboard/calculate'
+import { matchesScope } from '../scope/selection'
 
 const clone = <T>(value: T): T => structuredClone(value)
 const decimal = (value: number) => String(Number(value.toFixed(6)))
@@ -97,6 +98,10 @@ export function createDemoService(): ProductionService &
     history: async (filters) => {
       const term = filters.search.trim().toLocaleLowerCase('pt-BR')
       const filtered = records
+        .filter((record) => {
+          const item = items.find((item) => item.id === record.scope_item_id)
+          return Boolean(item && matchesScope(item, filters))
+        })
         .filter(
           (record) =>
             (!filters.start_date ||

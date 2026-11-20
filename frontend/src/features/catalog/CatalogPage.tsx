@@ -1,3 +1,6 @@
+import { ScopeCascade } from '../scope/ScopeCascade'
+import { useScopeCascade } from '../scope/useScopeCascade'
+import { emptySelection, scopeFilters, matchesScope } from '../scope/selection'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '../../components/PageHeader'
@@ -7,14 +10,18 @@ import { number, units } from '../../lib/format'
 
 export function CatalogPage() {
   const [search, setSearch] = useState('')
+  const [selection, setSelection] = useState(emptySelection)
+  const cascade = useScopeCascade(selection)
   const query = useQuery({
     queryKey: ['catalog'],
     queryFn: ({ signal }) => service.catalog(signal),
   })
-  const rows = (query.data ?? []).filter((item) =>
-    `${item.element_code} ${item.element_name} ${item.floor_name} ${item.environment_name} ${item.discipline_name} ${item.activity_name}`
-      .toLocaleLowerCase('pt-BR')
-      .includes(search.trim().toLocaleLowerCase('pt-BR')),
+  const rows = (query.data ?? []).filter(
+    (item) =>
+      matchesScope(item, scopeFilters(selection)) &&
+      `${item.element_code} ${item.element_name} ${item.floor_name} ${item.environment_name} ${item.discipline_name} ${item.activity_name}`
+        .toLocaleLowerCase('pt-BR')
+        .includes(search.trim().toLocaleLowerCase('pt-BR')),
   )
   return (
     <>
@@ -22,6 +29,14 @@ export function CatalogPage() {
         title="Escopo e cadastros"
         description="Confira os elementos, as quantidades previstas e os pesos de produção."
       />
+      <section className="panel mb-5 p-5">
+        <ScopeCascade
+          prefix="catalog"
+          selection={selection}
+          cascade={cascade}
+          onChange={setSelection}
+        />
+      </section>
       <section className="panel mb-5 p-5">
         <label
           className="grid gap-2 text-sm font-medium"

@@ -1,3 +1,6 @@
+import { ScopeCascade } from '../scope/ScopeCascade'
+import { useScopeCascade } from '../scope/useScopeCascade'
+import { emptySelection, scopeFilters } from '../scope/selection'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '../../components/PageHeader'
@@ -153,6 +156,9 @@ const initialFilters: HistoryFilters = {
 export function HistoryPage() {
   const access = useProjectAccess()
   const [filters, setFilters] = useState(initialFilters)
+  const [selection, setSelection] = useState(emptySelection)
+  const cascade = useScopeCascade(selection)
+  const scopedFilters = { ...filters, ...scopeFilters(selection) }
   const [editing, setEditing] = useState<ProductionRecord | null>(null)
   const [success, setSuccess] = useState('')
   const invalidRange = Boolean(
@@ -161,9 +167,9 @@ export function HistoryPage() {
     filters.start_date > filters.end_date,
   )
   const query = useQuery({
-    queryKey: ['history', filters],
-    queryFn: ({ signal }) => service.history(filters, signal),
-    enabled: !invalidRange,
+    queryKey: ['history', scopedFilters],
+    queryFn: ({ signal }) => service.history(scopedFilters, signal),
+    enabled: !invalidRange && !cascade.stale,
   })
   function filter(patch: Partial<HistoryFilters>) {
     setFilters((current) => ({ ...current, ...patch, page: 1 }))
@@ -176,6 +182,17 @@ export function HistoryPage() {
         title="Histórico de produção"
         description="Consulte os apontamentos e mantenha as correções rastreáveis."
       />
+      <section className="panel mb-5 p-5" aria-label="Local do histórico">
+        <ScopeCascade
+          prefix="history"
+          selection={selection}
+          cascade={cascade}
+          onChange={(next) => {
+            setSelection(next)
+            filter({})
+          }}
+        />
+      </section>
       <section
         className="panel mb-5 grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-4"
         aria-label="Filtros do histórico"
@@ -252,7 +269,7 @@ export function HistoryPage() {
       <p role="status" className="mb-4 text-emerald-800">
         {success}
       </p>
-      {!invalidRange && (
+      {!invalidRange && !cascade.stale && (
         <>
           <QueryFeedback
             pending={query.isPending}
