@@ -32,7 +32,7 @@ npm run format
 - Toda variável `VITE_*` é pública. Nunca colocar segredos administrativos nela.
 - Produção tem cascata, medição percentual adicional, checklist, prévia de quantidade, gravação em lote e confirmação de descarte. Histórico tem filtros, paginação e correções justificadas preservando originais. Dashboard mostra avanço ponderado e produção diária por unidade. Efetivo registra contagens por dia e empresa com revisões. Cadastros permite consultar o escopo e seus pesos, sem edição administrativa nesta etapa.
 - O backend é a autoridade para saldo, arredondamento, autorização, autoria e indicadores. A prévia local é apenas informativa.
-- Não há suporte offline. Demonstração usa dados compartilhados entre as telas, em memória, reiniciados ao recarregar. A integração real depende do backend Python e da homologação do projeto de autenticação. Contratos novos são propostas, não endpoints já disponíveis.
+- Não há suporte offline. Demonstração usa dados compartilhados entre as telas, em memória, reiniciados ao recarregar. A API Python em `backend/` implementa os endpoints e foi verificada com o frontend e PostgreSQL locais. Para uso real, ainda é necessário configurar o ambiente e homologar o projeto de autenticação e os dados da obra.
 - Em hospedagem estática, configurar fallback de rotas para `index.html`.
 
 ## Organização

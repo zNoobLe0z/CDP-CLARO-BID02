@@ -1,6 +1,6 @@
 # Contratos propostos de dashboard e efetivo
 
-Estas rotas precisam ser implementadas e validadas pelo backend Python. Frontend possui adaptadores e demonstração em memória. Todas as rotas abaixo usam `/api/v1/projects/{project_id}` e exigem autenticação e autorização da obra.
+Estas rotas foram implementadas em `backend/` e verificadas localmente em PostgreSQL. A homologação no ambiente real continua pendente. Frontend possui adaptadores e demonstração em memória. Todas as rotas abaixo usam `/api/v1/projects/{project_id}` e exigem autenticação e autorização da obra.
 
 ## Dashboard
 

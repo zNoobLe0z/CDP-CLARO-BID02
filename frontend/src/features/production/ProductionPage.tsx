@@ -209,9 +209,7 @@ export function ProductionPage() {
       <UnsavedChangesDialog
         dirty={
           !mutation.isSuccess &&
-          (mutation.isPending ||
-            selectedCount > 0 ||
-            Boolean(observation.trim()))
+          (selectedCount > 0 || Boolean(observation.trim()))
         }
       />
       {access.error && (
