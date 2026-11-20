@@ -1,4 +1,5 @@
 import type { ScopeItem } from './types'
+import type { ScopeFilters } from '../scope/selection'
 
 export interface CatalogItem extends ScopeItem {
   floor_id: string
@@ -31,7 +32,7 @@ export interface ProductionRecord {
   replaces_id: string | null
   correction_reason: string | null
 }
-export interface HistoryFilters {
+export interface HistoryFilters extends Partial<ScopeFilters> {
   page: number
   page_size: number
   start_date: string

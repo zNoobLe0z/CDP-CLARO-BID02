@@ -41,6 +41,8 @@ As marcações concluídas representam a implementação do frontend, seus adapt
 
 ## Fluxo de trabalho
 
+A branch `frontend/cascade-navigation`, derivada de `frontend/mvp-workflows`, padroniza os cinco níveis de seleção em Produção, Dashboard, Histórico e consulta de Escopo. Regras e contratos adicionais estão em [Navegação em cascata](cascade-navigation.md). A homologação da API continua pendente.
+
 - Manter frontend em `frontend/` e backend separado; alterações no contrato exigem revisão conjunta.
 - Abrir branches curtas a partir da `main` atualizada; integrar por pull request revisado.
 - Commits por objetivo usando `feat`, `fix`, `test`, `docs`, `refactor` ou `chore`.

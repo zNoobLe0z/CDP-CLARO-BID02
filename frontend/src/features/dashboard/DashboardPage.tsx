@@ -2,64 +2,38 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { PageHeader } from '../../components/PageHeader'
-import { SelectField } from '../../components/SelectField'
+import { ScopeCascade } from '../scope/ScopeCascade'
+import { useScopeCascade } from '../scope/useScopeCascade'
+import { emptySelection, scopeFilters } from '../scope/selection'
+
 import { QueryFeedback } from '../../components/QueryFeedback'
 import { productionService as service } from '../production/service'
 import { localDate, validExecutionDate } from '../production/measurement'
 import { dateLabel, number, units } from '../../lib/format'
 
 export function DashboardPage() {
-  const [filters, setFilters] = useState({
-    reference_date: localDate(),
-    floor_id: '',
-    environment_id: '',
-    discipline_id: '',
-  })
-  const catalog = useQuery({
-    queryKey: ['catalog'],
-    queryFn: ({ signal }) => service.catalog(signal),
-  })
-  const floors = useQuery({
-    queryKey: ['production', 'floors'],
-    queryFn: ({ signal }) => service.floors(signal),
-  })
+  const [date, setDate] = useState(localDate)
+  const [selection, setSelection] = useState(emptySelection)
+  const cascade = useScopeCascade(selection)
+  const filters = { reference_date: date, ...scopeFilters(selection) }
   const validDate = validExecutionDate(filters.reference_date)
   const query = useQuery({
     queryKey: ['dashboard', filters],
     queryFn: ({ signal }) => service.dashboard(filters, signal),
-    enabled: validDate,
+    enabled: validDate && !cascade.stale,
   })
-  const options = (kind: 'environment' | 'discipline') => [
-    ...new Map(
-      (catalog.data ?? [])
-        .filter(
-          (item) =>
-            (!filters.floor_id || item.floor_id === filters.floor_id) &&
-            (kind === 'environment' ||
-              !filters.environment_id ||
-              item.environment_id === filters.environment_id),
-        )
-        .map((item) => [
-          item[`${kind}_id`],
-          { id: item[`${kind}_id`], name: item[`${kind}_name`] },
-        ]),
-    ).values(),
-  ]
   const data = query.data
-  const error = query.error ?? catalog.error ?? floors.error
+  const error = query.error
   return (
     <>
       <PageHeader
         title="Dashboard"
         description="Acompanhe o avanço físico ponderado e a produção registrada na obra."
       />
-      <section
-        className="panel mb-6 grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-4"
-        aria-label="Filtros do dashboard"
-      >
+      <section className="panel mb-6 p-5" aria-label="Filtros do dashboard">
         <label
           htmlFor="reference-date"
-          className="grid gap-2 text-sm font-semibold"
+          className="mb-5 grid max-w-xs gap-2 text-sm font-semibold"
         >
           Acumulado até
           <input
@@ -67,57 +41,20 @@ export function DashboardPage() {
             type="date"
             max={localDate()}
             value={filters.reference_date}
-            onChange={(event) =>
-              setFilters((current) => ({
-                ...current,
-                reference_date: event.target.value,
-              }))
-            }
+            onChange={(event) => setDate(event.target.value)}
           />
         </label>
-        <SelectField
-          id="dashboard-floor"
-          emptyLabel="Todos"
-          label="Andar"
-          value={filters.floor_id}
-          options={floors.data ?? []}
-          onChange={(value) =>
-            setFilters((current) => ({
-              ...current,
-              floor_id: value,
-              environment_id: '',
-              discipline_id: '',
-            }))
-          }
-        />
-        <SelectField
-          id="dashboard-environment"
-          emptyLabel="Todos"
-          label="Ambiente"
-          value={filters.environment_id}
-          options={options('environment')}
-          onChange={(value) =>
-            setFilters((current) => ({
-              ...current,
-              environment_id: value,
-              discipline_id: '',
-            }))
-          }
-        />
-        <SelectField
-          id="dashboard-discipline"
-          emptyLabel="Todas"
-          label="Disciplina"
-          value={filters.discipline_id}
-          options={options('discipline')}
-          onChange={(value) =>
-            setFilters((current) => ({ ...current, discipline_id: value }))
-          }
+        <ScopeCascade
+          prefix="dashboard"
+          selection={selection}
+          cascade={cascade}
+          onChange={setSelection}
         />
       </section>
       <p className="mb-5 text-sm text-slate-500">
-        Selecione a opção “Todos” para consultar todo o escopo. Quantidades de
-        unidades diferentes são apresentadas separadamente.
+        Use os níveis em sequência para detalhar o avanço, ou deixe a seleção
+        vazia para consultar a obra. Quantidades de unidades diferentes são
+        apresentadas separadamente.
       </p>
       {!validDate ? (
         <p role="alert" className="text-red-700">
@@ -130,11 +67,9 @@ export function DashboardPage() {
             error={error}
             retry={() => {
               void query.refetch()
-              void catalog.refetch()
-              void floors.refetch()
             }}
           />
-          {data && !query.isError && (
+          {data && !query.isError && !cascade.stale && (
             <>
               <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {[
