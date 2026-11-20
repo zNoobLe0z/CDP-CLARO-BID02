@@ -20,6 +20,25 @@
 6. `frontend/cadastros`: manutenção de cadastros e importação inicial conforme permissões e API.
 7. `frontend/piloto`: validação no canteiro, integração ponta a ponta, teclado/acessibilidade e conexão instável.
 
+## Avanço na branch frontend/mvp-workflows
+
+- [x] Login, logout, sessão persistente e renovação de token com SDK Supabase; configuração por ambiente.
+- [x] Rotas protegidas, perfil autorizado retornado pela API e limpeza de cache ao trocar usuário/sair.
+- [x] Histórico com busca, filtro por data/situação e paginação.
+- [x] Correções justificadas com registro substituto, preservação do original, idempotência e controle de versão na demonstração e contrato.
+- [x] Confirmação de descarte do apontamento ao navegar, validação de datas no fuso da obra e atualização manual de saldo após conflito.
+- [x] Dashboard com avanço ponderado, filtros, situações de elementos e produção diária por atividade/unidade.
+- [x] Efetivo por data/empresa, zero versus ausência de registro, substituição de contagem e consulta de revisões.
+- [x] Consulta e busca do escopo com quantidades, unidades e pesos.
+- [x] Adaptadores HTTP e testes de contrato para os novos endpoints.
+- [x] Verificações locais, navegadores desktop/mobile e GitHub Actions.
+- [ ] Homologar login e endpoints com Supabase e API Python reais; nenhum ambiente real foi configurado nesta entrega.
+- [ ] Construir inclusão/importação e revisão administrativa do escopo após definir políticas com engenharia.
+- [ ] Validar com a equipe o critério de peso, prazos retroativos, permissões de correção, precisão e volume das consultas.
+- [ ] Realizar piloto em canteiro com dados reais, permissões e cópias de segurança.
+
+As marcações concluídas representam a implementação do frontend, seus adaptadores e sua demonstração. Não significam que o backend ou o banco foram implementados. As sugestões de branches anteriores continuam úteis para dividir a homologação e os próximos incrementos.
+
 ## Fluxo de trabalho
 
 - Manter frontend em `frontend/` e backend separado; alterações no contrato exigem revisão conjunta.
