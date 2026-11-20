@@ -46,23 +46,21 @@ O sistema foi arquitetado no padrão comercial (SaaS), separando a inteligência
 - PostgreSQL hospedado no [Supabase](https://supabase.com/)
 - Controle de Versão: Git & GitHub
 
-## 🚀 Como executar o projeto localmente
+## Desenvolvimento do frontend
 
-A arquitetura é dividida em dois ecossistemas. Para rodar o projeto na sua máquina, inicie os dois terminais conforme abaixo:
+O frontend React com TypeScript, Vite e Tailwind está em [frontend](frontend/README.md).
 
-### 1. Rodando o Backend (API em Python)
-Abra um terminal e execute:
-```bash
-# Acesse a pasta do backend
-cd backend
+```sh
+cd frontend
+npm ci
+npm run dev
+```
 
-# Crie e ative o ambiente virtual
-python -m venv venv
-# No Windows: venv\Scripts\activate
-# No Linux/Mac: source venv/bin/activate
+Requer Node.js 24 e npm 11. O padrão é demonstração em memória, sem conexão com banco. Produção, histórico, correções, dashboard, efetivo e consulta de escopo compartilham dados fictícios. Login com Supabase está implementado para o modo API, mas exige configuração do projeto e backend compatível. Edição administrativa de cadastros, cronograma, produtividade individual e qualidade permanecem pendentes.
 
-# Instale as dependências
-pip install -r requirements.txt
+- [Contrato proposto da API de Produção](docs/api-production.md)
+- [Tarefas e versionamento do frontend](docs/frontend-tasks.md)
 
-# Inicie o servidor da API
-uvicorn main:app --reload
+## Backend
+
+A arquitetura prevê uma API Python com FastAPI e PostgreSQL no Supabase. A implementação do backend ainda não está presente neste repositório. Os recursos descritos acima representam os objetivos do produto, não funcionalidades já concluídas.

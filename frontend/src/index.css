@@ -1,0 +1,62 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Segoe UI', Arial, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply m-0 bg-slate-50 text-slate-900 antialiased;
+  }
+  button,
+  a,
+  select,
+  input[type='checkbox'] {
+    @apply cursor-pointer;
+  }
+  button:disabled,
+  input:disabled,
+  select:disabled {
+    @apply cursor-not-allowed;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-4 outline-blue-700;
+  }
+  input:not([type='checkbox']),
+  select,
+  textarea {
+    @apply min-h-12 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-3 text-base font-normal text-slate-900;
+  }
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    @apply bg-slate-100 text-slate-500;
+  }
+  input[type='checkbox'] {
+    @apply h-5 w-5 accent-slate-900;
+  }
+  input[aria-invalid='true'] {
+    @apply border-red-600;
+  }
+}
+
+@layer components {
+  .button-secondary {
+    @apply min-h-12 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400;
+  }
+  .panel {
+    @apply rounded-2xl border border-slate-200 bg-white;
+  }
+  .eyebrow {
+    @apply text-[11px] font-semibold tracking-[0.13em] text-slate-500;
+  }
+  .step {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600;
+  }
+  .button-primary {
+    @apply min-h-12 justify-center rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500;
+  }
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded focus:bg-white focus:p-3 focus:text-slate-900;
+  }
+}
