@@ -2,6 +2,9 @@ import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowRight, Check, Save } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
+import { UnsavedChangesDialog } from '../../components/UnsavedChangesDialog'
+import { ApiError } from '../../lib/api'
+import { canEdit, useProjectAccess } from '../auth/access'
 import { SelectField } from '../../components/SelectField'
 import { productionService as service } from './service'
 import {
@@ -9,6 +12,7 @@ import {
   localDate,
   parsePercentage,
   validateEntry,
+  validExecutionDate,
 } from './measurement'
 import type { ProductionBatch, ScopeItem } from './types'
 
@@ -21,19 +25,20 @@ function ElementInput({
   value,
   onChange,
   disabled,
+  serverError,
 }: {
   item: ScopeItem
   value: string
   onChange: (value: string) => void
   disabled: boolean
+  serverError?: string
 }) {
   const planned = Number(item.planned_quantity)
   const executed = Number(item.executed_quantity)
   const complete = executed >= planned
-  const error = validateEntry(
-    item,
-    item.measurement_type === 'percentage' ? value : '',
-  )
+  const error =
+    serverError ??
+    validateEntry(item, item.measurement_type === 'percentage' ? value : '')
   const increment = Number.isFinite(parsePercentage(value))
     ? (planned * parsePercentage(value)) / 100
     : 0
@@ -117,6 +122,8 @@ function ElementInput({
 
 export function ProductionPage() {
   const queryClient = useQueryClient()
+  const access = useProjectAccess()
+  const writable = canEdit(access.data?.role)
   const [selection, setSelection] = useState({
     floor: '',
     environment: '',
@@ -163,15 +170,28 @@ export function ProductionPage() {
       setObservation('')
       submission.current = null
       setMessage('Apontamento salvo com sucesso.')
-      await queryClient.invalidateQueries({ queryKey: ['production', 'scope'] })
+      await Promise.all(
+        ['production', 'history', 'dashboard', 'catalog'].map((key) =>
+          queryClient.invalidateQueries({ queryKey: [key] }),
+        ),
+      )
     },
     onSettled: () => {
       inFlight.current = false
     },
   })
   function changeSelection(next: typeof selection) {
+    if (
+      (Object.values(draft).some((value) => Boolean(value.trim())) ||
+        observation.trim()) &&
+      !window.confirm(
+        'A mudança de local ou atividade descartará o preenchimento. Continuar?',
+      )
+    )
+      return
     setSelection(next)
     setDraft({})
+    setObservation('')
     setMessage('')
     mutation.reset()
     submission.current = null
@@ -197,9 +217,43 @@ export function ProductionPage() {
     activities,
     scope,
   ].find((query) => query.isError)
-  const dateInvalid = !date || date > localDate()
+  const dateInvalid = !validExecutionDate(date)
+  const tooMany = selectedCount > 200
+  const serverFields =
+    mutation.error instanceof ApiError ? mutation.error.fields : {}
+  const serverItemError = (id: string) => {
+    const index =
+      mutation.variables?.batch.entries.findIndex(
+        (entry) => entry.scope_item_id === id,
+      ) ?? -1
+    return (
+      Object.entries(serverFields)
+        .filter(([field]) => field.startsWith(`entries.${index}.`))
+        .map(([, message]) => message)
+        .join(' ') || undefined
+    )
+  }
   return (
     <>
+      <UnsavedChangesDialog
+        dirty={
+          !mutation.isSuccess &&
+          (mutation.isPending ||
+            selectedCount > 0 ||
+            Boolean(observation.trim()))
+        }
+      />
+      {access.error && (
+        <p role="alert" className="mb-4 text-red-700">
+          {access.error.message}
+        </p>
+      )}
+      {!writable && (
+        <p className="mb-4 text-sm text-slate-600">
+          Seu acesso permite consulta. Solicite permissão para registrar
+          produção.
+        </p>
+      )}
       <PageHeader
         title="Apontar produção"
         description="Selecione a frente de serviço e registre o que foi executado no dia."
@@ -213,7 +267,9 @@ export function ProductionPage() {
             dateInvalid ||
             !selectedCount ||
             scope.isFetching ||
-            queryError
+            queryError ||
+            !writable ||
+            tooMany
           )
             return
           const batch = {
@@ -342,7 +398,7 @@ export function ProductionPage() {
               <span className="step">02</span>
               <h2 className="text-lg font-semibold">Execução do dia</h2>
             </div>
-            <fieldset disabled={mutation.isPending}>
+            <fieldset disabled={mutation.isPending || !writable}>
               <legend className="sr-only">Data e elementos executados</legend>
               <label
                 htmlFor="execution-date"
@@ -367,6 +423,11 @@ export function ProductionPage() {
                   Informe uma data válida que não esteja no futuro.
                 </p>
               )}
+              {serverFields.execution_date && (
+                <p role="alert" className="mb-4 text-red-700">
+                  {serverFields.execution_date}
+                </p>
+              )}
               {scope.isFetching ? (
                 <p role="status" className="py-5 text-slate-500">
                   Carregando elementos…
@@ -380,6 +441,7 @@ export function ProductionPage() {
                       value={draft[item.id] ?? ''}
                       onChange={(value) => updateDraft(item.id, value)}
                       disabled={mutation.isPending}
+                      serverError={serverItemError(item.id)}
                     />
                   ))}
                 </div>
@@ -409,6 +471,16 @@ export function ProductionPage() {
                 />
               </label>
             </fieldset>
+            {serverFields.observation && (
+              <p role="alert" className="mt-2 text-red-700">
+                {serverFields.observation}
+              </p>
+            )}
+            {tooMany && (
+              <p role="alert" className="mt-2 text-red-700">
+                Selecione no máximo 200 elementos por lançamento.
+              </p>
+            )}
             <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 pt-5">
               <p className="text-sm text-slate-500">
                 {selectedCount} elemento(s) selecionado(s)
@@ -422,7 +494,9 @@ export function ProductionPage() {
                   dateInvalid ||
                   mutation.isPending ||
                   scope.isFetching ||
-                  Boolean(queryError)
+                  Boolean(queryError) ||
+                  !writable ||
+                  tooMany
                 }
               >
                 <Save size={18} aria-hidden="true" />
@@ -435,9 +509,27 @@ export function ProductionPage() {
           {message && <p className="font-medium text-emerald-800">{message}</p>}
         </div>
         {mutation.isError && (
-          <p role="alert" className="mt-4 text-red-700">
+          <div role="alert" className="mt-4 text-red-700">
             {mutation.error.message} Os valores preenchidos foram mantidos.
-          </p>
+            {mutation.error instanceof ApiError &&
+              mutation.error.status === 409 && (
+                <button
+                  type="button"
+                  className="ml-3 min-h-11 font-semibold underline"
+                  onClick={async () => {
+                    const refreshed = await scope.refetch()
+                    if (refreshed.isError) return
+                    mutation.reset()
+                    submission.current = null
+                    setMessage(
+                      'Saldo atualizado. Revise o avanço antes de salvar novamente.',
+                    )
+                  }}
+                >
+                  Atualizar saldo
+                </button>
+              )}
+          </div>
         )}
       </form>
     </>

@@ -8,6 +8,7 @@ import {
   Menu,
   Users,
   X,
+  History,
 } from 'lucide-react'
 import { config } from './lib/config'
 import { ProductionPage } from './features/production/ProductionPage'
@@ -15,10 +16,14 @@ import { PageHeader } from './components/PageHeader'
 import { LoginPage } from './features/auth/LoginPage'
 import { RequireSession } from './features/auth/RequireSession'
 import { useAuth } from './features/auth/context'
+import { HistoryPage } from './features/production/HistoryPage'
+import { useProjectAccess } from './features/auth/access'
+import { QueryFeedback } from './components/QueryFeedback'
 
 const links = [
   { to: '/dashboard', label: 'Dashboard', icon: ChartNoAxesCombined },
   { to: '/producao', label: 'Produção', icon: ClipboardList },
+  { to: '/historico', label: 'Histórico', icon: History },
   { to: '/efetivo', label: 'Efetivo', icon: Users },
   { to: '/cadastros', label: 'Cadastros', icon: Database },
 ]
@@ -53,6 +58,25 @@ function PendingPage({
 function Workspace() {
   const [menuOpen, setMenuOpen] = useState(false)
   const auth = useAuth()
+  const access = useProjectAccess()
+  if (!config.demo && !access.isSuccess)
+    return (
+      <main className="mx-auto max-w-xl p-8">
+        <h1 className="text-2xl font-semibold">Acesso à obra</h1>
+        <QueryFeedback
+          pending={access.isPending}
+          error={access.error}
+          retry={() => void access.refetch()}
+        />
+        <button
+          type="button"
+          className="button-secondary"
+          onClick={() => void auth.signOut()}
+        >
+          Sair da conta
+        </button>
+      </main>
+    )
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[240px_1fr]">
       <a className="skip-link" href="#main">
@@ -144,6 +168,7 @@ function Workspace() {
           <Routes>
             <Route path="/" element={<Navigate to="/producao" replace />} />
             <Route path="/producao" element={<ProductionPage />} />
+            <Route path="/historico" element={<HistoryPage />} />
             <Route
               path="/dashboard"
               element={

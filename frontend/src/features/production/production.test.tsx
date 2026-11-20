@@ -6,6 +6,7 @@ import { ProductionPage } from './ProductionPage'
 import { createDemoService } from './demo-service'
 import { localDate } from './measurement'
 import type { ProductionBatch } from './types'
+import { createMemoryRouter, RouterProvider } from 'react-router'
 
 const batch: ProductionBatch = {
   execution_date: localDate(),
@@ -85,7 +86,11 @@ it('limpa seleções dependentes e valida o saldo no formulário', async () => {
   })
   render(
     <QueryClientProvider client={client}>
-      <ProductionPage />
+      <RouterProvider
+        router={createMemoryRouter([
+          { path: '/', element: <ProductionPage /> },
+        ])}
+      />
     </QueryClientProvider>,
   )
   await screen.findByRole('option', { name: '2º andar' })

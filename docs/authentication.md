@@ -17,6 +17,7 @@ Não há um projeto Supabase configurado ou criado por esta entrega. O teste com
 - Sair encerra a sessão deste dispositivo. Tokens de acesso já emitidos precisam ser tratados também pelo backend, conforme sua política de validade.
 - A proteção visual de rotas não substitui autorização do servidor. O backend deve verificar token, acesso à obra e permissões em cada operação.
 - Papéis de acesso devem vir da API de associação à obra; nunca de user_metadata editável pelo usuário.
+- `GET /api/v1/projects/{project_id}/me` deve devolver `{ user_id, display_name, role }`, com role `admin`, `editor` ou `viewer`. Sem associação, devolver 403. O frontend bloqueia a área da obra até essa consulta ter sucesso. Admin e editor podem registrar e corrigir produção; viewer consulta. O servidor deve repetir a verificação em todas as rotas.
 - A sessão usa o armazenamento do SDK no navegador; não incluir scripts não confiáveis. O backend nunca deve confiar em dados locais como prova de autorização.
 
 ## Verificação

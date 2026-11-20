@@ -3,11 +3,18 @@ import { config } from './config'
 export class ApiError extends Error {
   status: number
   code: string
-  constructor(message: string, status: number, code: string) {
+  fields: Record<string, string>
+  constructor(
+    message: string,
+    status: number,
+    code: string,
+    fields: Record<string, string> = {},
+  ) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.code = code
+    this.fields = fields
   }
 }
 
@@ -50,6 +57,11 @@ export async function request<T>(
       body?.error?.message ?? 'Não foi possível concluir a solicitação.',
       response.status,
       body?.error?.code ?? 'REQUEST_FAILED',
+      Object.fromEntries(
+        Object.entries(body?.error?.fields ?? {}).filter(
+          (entry): entry is [string, string] => typeof entry[1] === 'string',
+        ),
+      ),
     )
   }
   return response.json() as Promise<T>

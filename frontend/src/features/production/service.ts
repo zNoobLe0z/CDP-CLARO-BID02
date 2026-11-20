@@ -2,13 +2,38 @@ import { config } from '../../lib/config'
 import { request } from '../../lib/api'
 import { createDemoService } from './demo-service'
 import type { BatchResult, Option, ProductionService, ScopeItem } from './types'
+import type {
+  CatalogItem,
+  HistoryPage,
+  HistoryService,
+  ProductionRecord,
+} from './history-types'
 
 const project = `/projects/${encodeURIComponent(config.projectId)}`
 const query = (values: Record<string, string>) =>
   new URLSearchParams(values).toString()
 const list = async <T>(path: string, signal?: AbortSignal) =>
   (await request<{ items: T[] }>(path, { signal })).items
-const api: ProductionService = {
+const api: ProductionService & HistoryService = {
+  catalog: (signal) => list<CatalogItem>(`${project}/scope-catalog`, signal),
+  history: (filters, signal) =>
+    request<HistoryPage>(
+      `${project}/production-records?${new URLSearchParams(
+        Object.entries(filters)
+          .filter(([, value]) => value !== '')
+          .map(([key, value]) => [key, String(value)]),
+      ).toString()}`,
+      { signal },
+    ),
+  correct: (id, correction, key) =>
+    request<ProductionRecord>(
+      `${project}/production-records/${encodeURIComponent(id)}/corrections`,
+      {
+        method: 'POST',
+        headers: { 'Idempotency-Key': key },
+        body: JSON.stringify(correction),
+      },
+    ),
   floors: (signal) => list<Option>(`${project}/floors`, signal),
   environments: (floorId, signal) =>
     list<Option>(
