@@ -109,3 +109,63 @@ def test_binary_validation_and_duplicate_scope(client):
     assert (
         client.post(ADMIN + "/catalog/scope-items", json=body, headers=headers()).status_code == 422
     )
+
+
+def test_initial_catalog_enters_cascade_and_accepts_production(client):
+    entities = [
+        ("floors", {"id": "initial-floor", "name": "Andar inicial"}),
+        (
+            "environments",
+            {"id": "initial-room", "name": "Sala inicial", "floor_id": "initial-floor"},
+        ),
+        ("disciplines", {"id": "initial-discipline", "name": "Acabamento inicial"}),
+        (
+            "activities",
+            {
+                "id": "initial-activity",
+                "name": "Pintura inicial",
+                "discipline_id": "initial-discipline",
+            },
+        ),
+        (
+            "elements",
+            {
+                "id": "initial-element",
+                "name": "Parede inicial",
+                "code": "P-001",
+                "environment_id": "initial-room",
+            },
+        ),
+        (
+            "scope-items",
+            {
+                "id": "initial-scope",
+                "element_id": "initial-element",
+                "activity_id": "initial-activity",
+                "measurement_type": "percentage",
+                "unit": "m2",
+                "planned_quantity": "10",
+                "production_weight": "5",
+            },
+        ),
+        ("companies", {"id": "initial-company", "name": "Empresa inicial"}),
+    ]
+    for kind, data in entities:
+        response = client.post(
+            ADMIN + "/catalog/" + kind,
+            json=data | {"reason": "Carga inicial do escopo"},
+            headers=headers(),
+        )
+        assert response.status_code == 201, response.text
+    scope = client.get(
+        PREFIX + "/scope-items",
+        params={"environment_id": "initial-room", "activity_id": "initial-activity"},
+    ).json()["items"]
+    assert [item["id"] for item in scope] == ["initial-scope"]
+    response = client.post(
+        PREFIX + "/production-batches",
+        json=payload(item="initial-scope", percentage="25"),
+        headers=headers(),
+    )
+    assert response.status_code == 201, response.text
+    assert response.json()["items"][0]["executed_quantity"] == "2.5"
