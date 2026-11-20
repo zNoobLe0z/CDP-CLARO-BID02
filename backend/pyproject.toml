@@ -1,0 +1,29 @@
+[project]
+name = "cdp-claro-api"
+version = "0.1.0"
+description = "API de controle de produção CDP CLARO"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+  "fastapi>=0.120,<1",
+  "uvicorn>=0.38,<1",
+  "sqlalchemy>=2.0.45,<2.1",
+  "psycopg[binary]>=3.2,<4",
+  "pydantic-settings>=2.11,<3",
+  "httpx>=0.28,<1",
+  "alembic>=1.17,<2",
+  "tzdata>=2025.2",
+]
+
+[dependency-groups]
+dev = ["pytest>=9,<10", "ruff>=0.14,<1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
