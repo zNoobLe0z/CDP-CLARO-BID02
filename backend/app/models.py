@@ -25,6 +25,10 @@ class Base(DeclarativeBase):
     metadata = MetaData(schema="cdp")
 
 
+class Versioned:
+    version: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+
+
 class Project(Base):
     __tablename__ = "projects"
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
@@ -43,7 +47,7 @@ class Membership(Base):
     )
 
 
-class Floor(Base):
+class Floor(Versioned, Base):
     __tablename__ = "floors"
     project_id: Mapped[str] = mapped_column(String(100), primary_key=True)
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
@@ -51,7 +55,7 @@ class Floor(Base):
     __table_args__ = (ForeignKeyConstraint(["project_id"], ["cdp.projects.id"]),)
 
 
-class Environment(Base):
+class Environment(Versioned, Base):
     __tablename__ = "environments"
     project_id: Mapped[str] = mapped_column(String(100), primary_key=True)
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
@@ -65,7 +69,7 @@ class Environment(Base):
     )
 
 
-class Discipline(Base):
+class Discipline(Versioned, Base):
     __tablename__ = "disciplines"
     project_id: Mapped[str] = mapped_column(String(100), primary_key=True)
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
@@ -73,7 +77,7 @@ class Discipline(Base):
     __table_args__ = (ForeignKeyConstraint(["project_id"], ["cdp.projects.id"]),)
 
 
-class Activity(Base):
+class Activity(Versioned, Base):
     __tablename__ = "activities"
     project_id: Mapped[str] = mapped_column(String(100), primary_key=True)
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
@@ -87,7 +91,7 @@ class Activity(Base):
     )
 
 
-class Element(Base):
+class Element(Versioned, Base):
     __tablename__ = "elements"
     project_id: Mapped[str] = mapped_column(String(100), primary_key=True)
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
@@ -185,7 +189,7 @@ class Idempotency(Base):
     __table_args__ = (ForeignKeyConstraint(["project_id"], ["cdp.projects.id"]),)
 
 
-class Company(Base):
+class Company(Versioned, Base):
     __tablename__ = "companies"
     project_id: Mapped[str] = mapped_column(String(100), primary_key=True)
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
@@ -228,4 +232,23 @@ class WorkforceRevision(Base):
         ForeignKeyConstraint(
             ["project_id", "workforce_id"], ["cdp.workforce.project_id", "cdp.workforce.id"]
         ),
+    )
+
+
+class CatalogAudit(Base):
+    __tablename__ = "catalog_audit"
+    project_id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    entity_type: Mapped[str] = mapped_column(String(30))
+    entity_id: Mapped[str] = mapped_column(String(100))
+    action: Mapped[str] = mapped_column(String(20))
+    author_id: Mapped[UUID] = mapped_column(Uuid)
+    author_name: Mapped[str] = mapped_column(String(200))
+    reason: Mapped[str] = mapped_column(Text)
+    before: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    after: Mapped[dict] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    __table_args__ = (
+        ForeignKeyConstraint(["project_id"], ["cdp.projects.id"]),
+        Index("catalog_audit_entity", "project_id", "entity_type", "entity_id", "created_at"),
     )

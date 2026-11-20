@@ -33,6 +33,12 @@ def test_api_works_without_admin_privileges_and_cannot_rewrite_originals(seeded)
     with TestClient(application, raise_server_exceptions=False) as browser:
         response = browser.post(PREFIX + "/production-batches", json=payload(), headers=headers())
         assert response.status_code == 201, response.text
+        created = browser.post(
+            PREFIX + "/admin/catalog/floors",
+            json={"id": "runtime-floor", "name": "Andar", "reason": "Cadastro inicial"},
+            headers=headers(),
+        )
+        assert created.status_code == 201, created.text
         history = browser.get(PREFIX + "/production-records").json()["items"]
         record = next(item for item in history if item["quantity"] == "2.5")
         response = browser.post(

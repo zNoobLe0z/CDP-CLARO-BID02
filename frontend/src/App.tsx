@@ -21,6 +21,7 @@ import { useProjectAccess } from './features/auth/access'
 import { QueryFeedback } from './components/QueryFeedback'
 import { DashboardPage } from './features/dashboard/DashboardPage'
 import { WorkforcePage } from './features/workforce/WorkforcePage'
+import { CatalogAdminPage } from './features/catalog/CatalogAdminPage'
 import { CatalogPage } from './features/catalog/CatalogPage'
 
 const links = [
@@ -116,7 +117,12 @@ function Workspace() {
           <p className="px-3 pb-3 text-xs font-semibold tracking-widest text-slate-400">
             GESTÃO DA OBRA
           </p>
-          {links.map(({ to, label, icon: Icon }) => (
+          {[
+            ...links,
+            ...(access.data?.role === 'admin'
+              ? [{ to: '/administracao', label: 'Administrar', icon: Database }]
+              : []),
+          ].map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
@@ -174,6 +180,7 @@ function Workspace() {
             <Route path="/historico" element={<HistoryPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/efetivo" element={<WorkforcePage />} />
+            <Route path="/administracao" element={<CatalogAdminPage />} />
             <Route path="/cadastros" element={<CatalogPage />} />
             <Route
               path="*"

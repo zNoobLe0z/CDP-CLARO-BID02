@@ -342,6 +342,9 @@ def create_app(settings: Settings | None = None, engine=None, auth_http=None):
             ]
         }
 
+    from .catalog_admin import router as catalog_router
+
+    app.include_router(catalog_router())
     return app
 
 

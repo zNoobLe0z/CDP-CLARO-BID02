@@ -70,3 +70,9 @@ def editor(member: Membership = Depends(membership)):
     if member.role not in ("admin", "editor"):
         raise DomainError(403, "FORBIDDEN", "Seu perfil permite somente consulta.")
     return member
+
+
+def administrator(member: Membership = Depends(membership, scope="function")):
+    if member.role != "admin":
+        raise DomainError(403, "FORBIDDEN", "Esta operação exige perfil de administrador da obra.")
+    return member
