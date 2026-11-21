@@ -1,3 +1,4 @@
+import { demoTimeline, demoStages } from '../dashboard/analytics'
 import { ApiError } from '../../lib/api'
 import { validateEntry, localDate, validExecutionDate } from './measurement'
 import { initialCatalog } from './catalog'
@@ -65,6 +66,8 @@ export function createDemoService(): ProductionService &
       ),
     )
   return {
+    timeline: async (filters) => clone(demoTimeline(items, records, filters)),
+    stages: async (filters) => clone(demoStages(items, records, filters)),
     dashboard: async (filters) =>
       clone(calculateDashboard(items, records, filters)),
     floors: async () => [
@@ -108,7 +111,7 @@ export function createDemoService(): ProductionService &
               record.execution_date >= filters.start_date) &&
             (!filters.end_date || record.execution_date <= filters.end_date) &&
             (!filters.status || record.status === filters.status) &&
-            `${record.element_code} ${record.element_name} ${record.activity_name} ${record.environment_name}`
+            `${record.id} ${record.element_code} ${record.element_name} ${record.activity_name} ${record.environment_name}`
               .toLocaleLowerCase('pt-BR')
               .includes(term),
         )
