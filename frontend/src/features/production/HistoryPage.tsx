@@ -56,13 +56,13 @@ function CorrectionForm({
     Number(normalized) !== Number(record.quantity)
   return (
     <section
-      className="panel mb-6 border-blue-300 p-5"
+      className="panel mb-6 border-brand-ink p-5"
       aria-labelledby="correction-heading"
     >
       <h2 id="correction-heading" className="text-lg font-semibold">
         Corrigir {record.element_code}
       </h2>
-      <p className="my-3 text-sm text-slate-600">
+      <p className="my-3 text-sm text-secondary">
         Informe a quantidade correta deste registro, não o total acumulado do
         elemento. O original permanece no histórico. Use zero para anular a
         produção deste registro.
@@ -127,7 +127,7 @@ function CorrectionForm({
           </button>
           <button
             type="button"
-            className="min-h-12 px-3 underline"
+            className="min-h-10 px-3 underline"
             disabled={mutation.isPending}
             onClick={onClose}
           >
@@ -135,7 +135,7 @@ function CorrectionForm({
           </button>
         </div>
         {mutation.isError && (
-          <p role="alert" className="mt-3 text-red-700">
+          <p role="alert" className="mt-3 text-danger">
             {mutation.error.message} Feche e reabra a correção após atualizar o
             histórico caso o saldo tenha mudado.
           </p>
@@ -249,7 +249,7 @@ export function HistoryPage() {
         </label>
       </section>
       {invalidRange && (
-        <p role="alert" className="mb-4 text-red-700">
+        <p role="alert" className="mb-4 text-danger">
           A data inicial deve ser anterior ou igual à final.
         </p>
       )}
@@ -266,7 +266,7 @@ export function HistoryPage() {
           }}
         />
       )}
-      <p role="status" className="mb-4 text-emerald-800">
+      <p role="status" className="mb-4 text-success">
         {success}
       </p>
       {!invalidRange && !cascade.stale && (
@@ -290,18 +290,18 @@ export function HistoryPage() {
                         <h2 className="mt-2 text-lg font-semibold">
                           {record.activity_name} · {record.element_name}
                         </h2>
-                        <p className="mt-1 text-sm text-slate-600">
+                        <p className="mt-1 text-sm text-secondary">
                           {record.environment_name}
                         </p>
                       </div>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
+                      <span className="rounded bg-subtle px-3 py-1 text-xs font-semibold">
                         {record.status === 'active' ? 'Válido' : 'Substituído'}
                       </span>
                     </div>
                     <p className="mt-4 font-semibold">
                       {number(record.quantity)} {units[record.unit]}
                     </p>
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-secondary">
                       Apontado por {record.author_name}
                     </p>
                     {record.observation && (
@@ -315,18 +315,18 @@ export function HistoryPage() {
                       </p>
                     )}
                     {record.replaces_id && (
-                      <p className="mt-2 break-all text-xs text-slate-500">
+                      <p className="mt-2 break-all text-xs text-secondary">
                         Substitui o registro {record.replaces_id}
                       </p>
                     )}
-                    <p className="mt-2 break-all text-xs text-slate-500">
+                    <p className="mt-2 break-all text-xs text-secondary">
                       Registro {record.id} ·{' '}
                       {new Date(record.created_at).toLocaleString('pt-BR')}
                     </p>
                     {record.status === 'active' &&
                       canEdit(access.data?.role) && (
                         <button
-                          className="mt-3 min-h-11 text-sm font-semibold underline"
+                          className="mt-3 min-h-10 text-sm font-semibold underline"
                           type="button"
                           onClick={() => {
                             setEditing(record)
@@ -340,12 +340,12 @@ export function HistoryPage() {
                 ))}
               </div>
               {!query.data.total && (
-                <p className="panel p-8 text-slate-600">
+                <p className="panel p-8 text-secondary">
                   Nenhum apontamento encontrado para os filtros selecionados.
                 </p>
               )}
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-secondary">
                   {query.data.total} registros · Página {filters.page} de{' '}
                   {Math.max(1, Math.ceil(query.data.total / filters.page_size))}
                 </p>

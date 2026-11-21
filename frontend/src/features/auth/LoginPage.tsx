@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router'
 import { Building2 } from 'lucide-react'
+import { ThemeToggle } from '../../components/ThemeProvider'
 import { config } from '../../lib/config'
 import { useAuth } from './context'
 
@@ -21,21 +22,24 @@ export function LoginPage() {
       : '/producao'
   if (!auth.loading && auth.session) return <Navigate to={target} replace />
   return (
-    <main className="grid min-h-screen place-items-center px-5 py-10">
-      <section className="panel w-full max-w-md p-7 sm:p-10">
+    <main className="login-screen grid min-h-screen place-items-center px-5 py-10">
+      <div className="absolute right-4 top-4 w-44">
+        <ThemeToggle />
+      </div>
+      <section className="panel w-full max-w-md p-6 sm:p-8">
         <Building2
-          size={32}
+          size={24}
           aria-hidden="true"
-          className="mb-8 text-orange-600"
+          className="mb-8 text-brand-ink"
         />
         <p className="eyebrow">CDP CLARO</p>
-        <h1 className="mt-2 text-3xl font-semibold">Acesso à obra</h1>
-        <p className="mb-7 mt-3 text-slate-600">
+        <h1 className="mt-2 text-2xl font-semibold">Acesso à obra</h1>
+        <p className="mb-7 mt-3 text-secondary">
           Entre com a conta liberada pela administração.
         </p>
         {config.demo ? (
           <>
-            <p className="mb-6 text-sm text-slate-600">
+            <p className="mb-6 text-sm text-secondary">
               A demonstração usa dados fictícios e não exige uma conta real.
             </p>
             <Link to="/producao" className="button-primary flex">
@@ -43,7 +47,7 @@ export function LoginPage() {
             </Link>
           </>
         ) : !auth.configured ? (
-          <p role="alert" className="text-sm text-red-800">
+          <p role="alert" className="text-sm text-danger">
             O acesso ainda não foi configurado. Solicite à equipe a configuração
             do projeto de autenticação.
           </p>
@@ -102,7 +106,7 @@ export function LoginPage() {
               </button>
             </fieldset>
             {error && (
-              <p role="alert" className="mt-4 text-sm text-red-700">
+              <p role="alert" className="mt-4 text-sm text-danger">
                 {error}
               </p>
             )}

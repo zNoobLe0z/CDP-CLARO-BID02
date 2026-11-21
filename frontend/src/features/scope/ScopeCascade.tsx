@@ -46,11 +46,11 @@ export function ScopeCascade({
     .filter(Boolean)
   return (
     <div>
-      <p className="mb-5 text-sm text-slate-600">
+      <p className="mb-4 text-xs text-secondary">
         Selecione em sequência: Andar → Ambiente → Disciplina → Atividade →
         Elemento físico.
       </p>
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {levels.map((level, index) => (
           <SelectField
             key={level}
@@ -90,18 +90,18 @@ export function ScopeCascade({
         cascade.queries[index].isSuccess &&
         !cascade.queries[index].isFetching &&
         !cascade.options[index].length ? (
-          <p key={level} role="status" className="mt-4 text-sm text-slate-600">
+          <p key={level} role="status" className="mt-4 text-sm text-secondary">
             {emptyMessages[index]}
           </p>
         ) : null,
       )}
       {path.length > 0 && (
-        <nav aria-label="Caminho selecionado" className="mt-5">
-          <ol className="flex flex-wrap gap-2 text-xs text-slate-600">
+        <nav aria-label="Caminho selecionado" className="mt-4">
+          <ol className="flex flex-wrap gap-2 text-xs text-secondary">
             {path.map((name, index) => (
               <li
                 key={`${index}:${name}`}
-                className="rounded bg-slate-100 px-2 py-1"
+                className="rounded bg-subtle px-2 py-1"
               >
                 {index + 1}. {name}
               </li>
@@ -110,11 +110,11 @@ export function ScopeCascade({
         </nav>
       )}
       {cascade.error && (
-        <div role="alert" className="mt-4 text-sm text-red-700">
+        <div role="alert" className="mt-4 text-sm text-danger">
           <p>{cascade.error.error?.message}</p>
           <button
             type="button"
-            className="min-h-11 underline"
+            className="min-h-10 underline"
             onClick={() => void cascade.error?.refetch()}
           >
             Tentar carregar opções novamente
@@ -122,7 +122,7 @@ export function ScopeCascade({
         </div>
       )}
       {cascade.stale && (
-        <p role="alert" className="mt-4 text-sm text-red-700">
+        <p role="alert" className="mt-4 text-sm text-danger">
           Uma seleção não pertence mais ao contexto disponível. Limpe a seleção
           e escolha novamente.
         </p>
@@ -130,7 +130,7 @@ export function ScopeCascade({
       {levels.some((level) => Boolean(selection[level])) && (
         <button
           type="button"
-          className="mt-3 min-h-11 text-sm font-semibold underline"
+          className="mt-3 min-h-10 text-sm font-semibold underline"
           disabled={disabled}
           onClick={() => onChange({ ...emptySelection })}
         >

@@ -134,7 +134,7 @@ function Administration() {
         description="Organize os locais, serviços e quantidades da obra antes dos apontamentos."
       />
       <UnsavedChangesDialog dirty={dirty} />
-      <p className="mb-5 text-sm text-slate-600">
+      <p className="mb-5 text-sm text-secondary">
         Cada alteração exige justificativa. Após o primeiro apontamento,
         quantidades, pesos e vínculos do escopo ficam bloqueados.
       </p>
@@ -182,7 +182,7 @@ function Administration() {
                 onChange={(event) => setSearch(event.target.value)}
               />
             </label>
-            <ul className="mt-4 max-h-96 overflow-auto divide-y divide-slate-200">
+            <ul className="mt-4 max-h-96 overflow-auto divide-y divide-line">
               {rows.map((row) => (
                 <li
                   key={row.id}
@@ -192,7 +192,7 @@ function Administration() {
                     <p className="break-words font-medium">
                       {row.name ?? row.id}
                     </p>
-                    <p className="break-words text-sm text-slate-500">
+                    <p className="break-words text-sm text-secondary">
                       {row.id} · versão {row.version}
                     </p>
                   </div>
@@ -209,7 +209,7 @@ function Administration() {
               ))}
             </ul>
             {rows.length === 0 && (
-              <p className="mt-4 text-slate-600">Nenhum cadastro encontrado.</p>
+              <p className="mt-4 text-secondary">Nenhum cadastro encontrado.</p>
             )}
           </section>
           <form
@@ -232,7 +232,7 @@ function Administration() {
                   value={values.id ?? ''}
                   onChange={(event) => change('id', event.target.value)}
                 />
-                <span className="text-xs font-normal text-slate-600">
+                <span className="text-xs font-normal text-secondary">
                   Código único e permanente dentro da obra.
                 </span>
               </label>
@@ -288,7 +288,7 @@ function Administration() {
                 )
               })}
               {kind === 'scope-items' && (
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-secondary">
                   Use ponto nos decimais. Item unitário exige unidade “un” e
                   quantidade prevista 1. O peso representa esforço ou relevância
                   na produção.
@@ -322,14 +322,14 @@ function Administration() {
               </div>
             </fieldset>
             {mutation.error && (
-              <p role="alert" className="text-red-700">
+              <p role="alert" className="text-danger">
                 {mutation.error.message} Confira o cadastro; para carregar a
                 versão atual, descarte o preenchimento e atualize a lista.
               </p>
             )}
             <button
               type="button"
-              className="min-h-11 text-sm underline"
+              className="min-h-10 text-sm underline"
               disabled={dirty || mutation.isPending}
               onClick={() => void catalog.refetch()}
             >
@@ -339,7 +339,7 @@ function Administration() {
         </div>
       )}
       {notice && (
-        <p role="status" className="mt-5 text-green-800">
+        <p role="status" className="mt-5 text-success">
           {notice}
         </p>
       )}
@@ -352,7 +352,7 @@ function Administration() {
           error={audit.error}
           retry={() => void audit.refetch()}
         />
-        <ul className="divide-y divide-slate-200">
+        <ul className="divide-y divide-line">
           {audit.data?.items.map((item) => (
             <li key={item.id} className="py-3">
               <p className="font-medium">
@@ -360,14 +360,14 @@ function Administration() {
                 {item.author_name}
               </p>
               <p>{item.reason}</p>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-secondary">
                 {new Date(item.created_at).toLocaleString('pt-BR')}
               </p>
             </li>
           ))}
         </ul>
         {audit.isSuccess && audit.data.items.length === 0 && (
-          <p className="mt-3 text-slate-600">Nenhuma alteração registrada.</p>
+          <p className="mt-3 text-secondary">Nenhuma alteração registrada.</p>
         )}
       </section>
     </>

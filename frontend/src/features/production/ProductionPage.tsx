@@ -46,14 +46,14 @@ function ElementInput({
     ? (planned * parsePercentage(value)) / 100
     : 0
   return (
-    <article className="rounded-xl border border-slate-200 p-5">
+    <article className="rounded-md border border-line p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="eyebrow">{item.element_code}</p>
+          <p className="eyebrow font-mono">{item.element_code}</p>
           <h3 className="mt-1 font-semibold">{item.element_name}</h3>
         </div>
         {complete && (
-          <span className="flex items-center gap-1 text-sm font-medium text-emerald-700">
+          <span className="status-badge text-success">
             <Check size={16} aria-hidden="true" />
             Concluído
           </span>
@@ -61,19 +61,19 @@ function ElementInput({
       </div>
       <dl className="my-5 grid grid-cols-3 gap-3 text-sm">
         <div>
-          <dt className="text-slate-500">Previsto</dt>
+          <dt className="text-secondary">Previsto</dt>
           <dd className="mt-1 font-medium">
             {format(planned)} {units[item.unit]}
           </dd>
         </div>
         <div>
-          <dt className="text-slate-500">Executado</dt>
+          <dt className="text-secondary">Executado</dt>
           <dd className="mt-1 font-medium">
             {format(executed)} {units[item.unit]}
           </dd>
         </div>
         <div>
-          <dt className="text-slate-500">Saldo</dt>
+          <dt className="text-secondary">Saldo</dt>
           <dd className="mt-1 font-medium">
             {format(planned - executed)} {units[item.unit]}
           </dd>
@@ -86,21 +86,24 @@ function ElementInput({
             htmlFor={`item-${item.id}`}
           >
             Avanço adicional do dia (%)
-            <input
-              id={`item-${item.id}`}
-              inputMode="decimal"
-              autoComplete="off"
-              value={value}
-              disabled={disabled || complete}
-              onChange={(event) => onChange(event.target.value)}
-              aria-invalid={Boolean(error)}
-              aria-describedby={`feedback-${item.id}`}
-              placeholder="Ex.: 25"
-            />
+            <span className="field-unit">
+              <input
+                id={`item-${item.id}`}
+                inputMode="decimal"
+                autoComplete="off"
+                value={value}
+                disabled={disabled || complete}
+                onChange={(event) => onChange(event.target.value)}
+                aria-invalid={Boolean(error)}
+                aria-describedby={`feedback-${item.id}`}
+                placeholder="Ex.: 25"
+              />
+              <span aria-hidden="true" data-unit="%" />
+            </span>
           </label>
           <p
             id={`feedback-${item.id}`}
-            className={`mt-2 text-sm ${error ? 'text-red-700' : 'text-slate-500'}`}
+            className={`mt-2 text-sm ${error ? 'text-danger' : 'text-secondary'}`}
           >
             {error ??
               (value
@@ -109,7 +112,7 @@ function ElementInput({
           </p>
         </>
       ) : (
-        <label className="flex min-h-12 cursor-pointer items-center gap-3 text-sm font-medium">
+        <label className="flex min-h-10 cursor-pointer items-center gap-3 text-sm font-medium">
           <input
             type="checkbox"
             checked={complete || Boolean(value)}
@@ -213,12 +216,12 @@ export function ProductionPage() {
         }
       />
       {access.error && (
-        <p role="alert" className="mb-4 text-red-700">
+        <p role="alert" className="mb-4 text-danger">
           {access.error.message}
         </p>
       )}
       {!writable && (
-        <p className="mb-4 text-sm text-slate-600">
+        <p className="mb-4 text-sm text-secondary">
           Seu acesso permite consulta. Solicite permissão para registrar
           produção.
         </p>
@@ -255,7 +258,7 @@ export function ProductionPage() {
           mutation.mutate({ batch, key: submission.current.key })
         }}
       >
-        <fieldset disabled={mutation.isPending} className="panel p-5 sm:p-7">
+        <fieldset disabled={mutation.isPending} className="panel p-5 sm:p-5">
           <legend className="sr-only">Local e atividade</legend>
           <div className="mb-6 flex items-center gap-3">
             <span className="step">01</span>
@@ -271,13 +274,13 @@ export function ProductionPage() {
           />
         </fieldset>
         {!activity ? (
-          <div className="my-6 flex items-center gap-3 px-2 text-sm text-slate-500">
+          <div className="my-6 flex items-center gap-3 px-2 text-sm text-secondary">
             <ArrowRight size={18} aria-hidden="true" />
             <p>Escolha a atividade para visualizar os elementos disponíveis.</p>
           </div>
         ) : (
           <section
-            className="panel mt-5 p-5 sm:p-7"
+            className="panel mt-5 p-5 sm:p-5"
             aria-busy={scope.isFetching}
           >
             <div className="mb-6 flex items-center gap-3">
@@ -305,17 +308,17 @@ export function ProductionPage() {
                 />
               </label>
               {dateInvalid && (
-                <p role="alert" className="mb-4 text-sm text-red-700">
+                <p role="alert" className="mb-4 text-sm text-danger">
                   Informe uma data válida que não esteja no futuro.
                 </p>
               )}
               {serverFields.execution_date && (
-                <p role="alert" className="mb-4 text-red-700">
+                <p role="alert" className="mb-4 text-danger">
                   {serverFields.execution_date}
                 </p>
               )}
               {scope.isFetching ? (
-                <p role="status" className="py-5 text-slate-500">
+                <p role="status" className="py-5 text-secondary">
                   Carregando elementos…
                 </p>
               ) : (
@@ -333,7 +336,7 @@ export function ProductionPage() {
                 </div>
               )}
               {scope.isSuccess && !scope.isFetching && !items.length && (
-                <p className="py-5 text-slate-500">
+                <p className="py-5 text-secondary">
                   Nenhum elemento cadastrado para esta atividade.
                 </p>
               )}
@@ -342,7 +345,7 @@ export function ProductionPage() {
                 className="mt-6 grid gap-2 text-sm font-semibold"
               >
                 Observação{' '}
-                <span className="font-normal text-slate-500">Opcional</span>
+                <span className="font-normal text-secondary">Opcional</span>
                 <textarea
                   id="observation"
                   rows={3}
@@ -358,17 +361,17 @@ export function ProductionPage() {
               </label>
             </fieldset>
             {serverFields.observation && (
-              <p role="alert" className="mt-2 text-red-700">
+              <p role="alert" className="mt-2 text-danger">
                 {serverFields.observation}
               </p>
             )}
             {tooMany && (
-              <p role="alert" className="mt-2 text-red-700">
+              <p role="alert" className="mt-2 text-danger">
                 Selecione no máximo 200 elementos por lançamento.
               </p>
             )}
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 pt-5">
-              <p className="text-sm text-slate-500">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-5">
+              <p className="text-sm text-secondary">
                 {selectedCount} elemento(s) selecionado(s)
               </p>
               <button
@@ -393,16 +396,16 @@ export function ProductionPage() {
           </section>
         )}
         <div aria-live="polite" className="mt-4">
-          {message && <p className="font-medium text-emerald-800">{message}</p>}
+          {message && <p className="font-medium text-success">{message}</p>}
         </div>
         {mutation.isError && (
-          <div role="alert" className="mt-4 text-red-700">
+          <div role="alert" className="mt-4 text-danger">
             {mutation.error.message} Os valores preenchidos foram mantidos.
             {mutation.error instanceof ApiError &&
               mutation.error.status === 409 && (
                 <button
                   type="button"
-                  className="ml-3 min-h-11 font-semibold underline"
+                  className="ml-3 min-h-10 font-semibold underline"
                   onClick={async () => {
                     const refreshed = await scope.refetch()
                     if (refreshed.isError) return

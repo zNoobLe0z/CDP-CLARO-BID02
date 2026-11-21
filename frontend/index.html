@@ -4,7 +4,29 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#172b38" />
+    <meta name="theme-color" content="#F8FAFC" />
+    <script>
+      ;(() => {
+        let preference = 'system'
+        try {
+          preference = localStorage.getItem('cdp.theme.v1') || 'system'
+        } catch {}
+        const dark =
+          preference === 'dark' ||
+          (preference !== 'light' &&
+            matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+      })()
+    </script>
+    <style>
+      html {
+        background: #f8fafc;
+      }
+      html[data-theme='dark'] {
+        background: #090b0e;
+      }
+    </style>
     <meta
       name="description"
       content="Controle de produção e avanço físico da obra CDP CLARO."
