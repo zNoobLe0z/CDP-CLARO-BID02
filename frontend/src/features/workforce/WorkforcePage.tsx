@@ -121,7 +121,7 @@ function CountForm({
             />
           </label>
         </fieldset>
-        <p className="my-4 text-sm text-slate-500">
+        <p className="my-4 text-sm text-secondary">
           Zero significa que não houve pessoas presentes. Campo vazio significa
           contagem ainda não informada. Ao corrigir, informe a nova contagem
           total do dia.
@@ -134,7 +134,7 @@ function CountForm({
           {mutation.isPending ? 'Salvando…' : 'Salvar efetivo'}
         </button>
         {mutation.isError && (
-          <p role="alert" className="mt-4 text-red-700">
+          <p role="alert" className="mt-4 text-danger">
             {mutation.error.message} O preenchimento foi mantido. Para atualizar
             um conflito, selecione novamente a empresa e revise a contagem.
           </p>
@@ -158,9 +158,9 @@ function Revisions({ id }: { id: string }) {
       />
       {query.isSuccess &&
         (!query.data.length ? (
-          <p className="text-xs text-slate-500">Nenhuma revisão anterior.</p>
+          <p className="text-xs text-secondary">Nenhuma revisão anterior.</p>
         ) : (
-          <ul className="grid gap-2 text-xs text-slate-600">
+          <ul className="grid gap-2 text-xs text-secondary">
             {query.data.map((revision) => (
               <li key={revision.version}>
                 Versão {revision.version}: {revision.headcount} pessoas ·{' '}
@@ -233,8 +233,8 @@ export function WorkforcePage() {
         description="Registre o número de pessoas presentes por empresa e dia."
       />
       {canEdit(access.data?.role) && (
-        <section className="panel mb-6 p-5 sm:p-7">
-          <h2 className="mb-5 text-lg font-semibold">Contagem diária</h2>
+        <section className="panel mb-6 p-5">
+          <h2 className="mb-5 text-base font-semibold">Contagem diária</h2>
           <div className="mb-5 grid gap-4 sm:grid-cols-2">
             <label
               className="grid gap-2 text-sm font-semibold"
@@ -258,7 +258,7 @@ export function WorkforcePage() {
             />
           </div>
           {company && !validExecutionDate(date) && (
-            <p role="alert" className="text-red-700">
+            <p role="alert" className="text-danger">
               Informe uma data válida até hoje.
             </p>
           )}
@@ -281,13 +281,13 @@ export function WorkforcePage() {
               )}
             </>
           )}
-          <p role="status" className="mt-4 text-emerald-800">
+          <p role="status" className="mt-4 text-success">
             {success}
           </p>
         </section>
       )}
-      <section className="panel p-5 sm:p-7">
-        <h2 className="mb-5 text-lg font-semibold">Consulta de efetivo</h2>
+      <section className="panel p-5">
+        <h2 className="mb-5 text-base font-semibold">Consulta de efetivo</h2>
         <div className="mb-5 grid gap-4 sm:grid-cols-3">
           <label
             htmlFor="workforce-start"
@@ -335,7 +335,7 @@ export function WorkforcePage() {
           />
         </div>
         {!validPeriod ? (
-          <p role="alert" className="text-red-700">
+          <p role="alert" className="text-danger">
             Informe um período válido.
           </p>
         ) : (
@@ -353,10 +353,10 @@ export function WorkforcePage() {
                 {days.map((day) => (
                   <article
                     key={day}
-                    className="rounded-xl border border-slate-200 p-4"
+                    className="rounded-md border border-line p-4"
                   >
                     <h3 className="font-semibold">{dateLabel(day)}</h3>
-                    <p className="my-2 text-sm text-slate-500">
+                    <p className="my-2 text-sm text-secondary">
                       Total informado no dia:{' '}
                       {records.data
                         .filter((record) => record.execution_date === day)
@@ -366,7 +366,7 @@ export function WorkforcePage() {
                         )}{' '}
                       pessoas
                     </p>
-                    <ul className="divide-y divide-slate-100">
+                    <ul className="divide-y divide-line">
                       {companies.data
                         .filter(
                           (item) =>
@@ -390,7 +390,7 @@ export function WorkforcePage() {
                               </div>
                               {record && (
                                 <>
-                                  <p className="mt-1 text-xs text-slate-500">
+                                  <p className="mt-1 text-xs text-secondary">
                                     {record.author_name} · versão{' '}
                                     {record.version}
                                     {record.observation
@@ -399,7 +399,7 @@ export function WorkforcePage() {
                                   </p>
                                   <button
                                     type="button"
-                                    className="min-h-11 text-xs underline"
+                                    className="min-h-10 text-xs underline"
                                     onClick={() =>
                                       setRevisions((current) =>
                                         current === record.id ? '' : record.id,
@@ -424,13 +424,13 @@ export function WorkforcePage() {
               </div>
             )}
             {records.isSuccess && !records.data.length && (
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-secondary">
                 Nenhuma contagem informada no período.
               </p>
             )}
           </>
         )}
-        <p className="mt-5 text-xs text-slate-500">
+        <p className="mt-5 text-xs text-secondary">
           A consulta mostra dias com ao menos uma contagem informada. Não
           representa funcionários únicos nem produtividade. Não há soma de
           pessoas entre dias.

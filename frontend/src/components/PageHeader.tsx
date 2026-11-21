@@ -6,12 +6,12 @@ export function PageHeader({
   description: string
 }) {
   return (
-    <div className="mb-8">
-      <p className="eyebrow">CONTROLE DE PRODUÇÃO</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-        {title}
-      </h1>
-      <p className="mt-3 max-w-2xl text-slate-600">{description}</p>
+    <div className="page-header">
+      <div>
+        <p className="eyebrow">Controle de produção</p>
+        <h1 className="page-title">{title}</h1>
+        <p className="page-description">{description}</p>
+      </div>
     </div>
   )
 }

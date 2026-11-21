@@ -56,13 +56,13 @@ function CorrectionForm({
     Number(normalized) !== Number(record.quantity)
   return (
     <section
-      className="panel mb-6 border-blue-300 p-5"
+      className="panel mb-6 border-brand-ink p-5"
       aria-labelledby="correction-heading"
     >
-      <h2 id="correction-heading" className="text-lg font-semibold">
+      <h2 id="correction-heading" className="text-base font-semibold">
         Corrigir {record.element_code}
       </h2>
-      <p className="my-3 text-sm text-slate-600">
+      <p className="my-3 text-sm text-secondary">
         Informe a quantidade correta deste registro, não o total acumulado do
         elemento. O original permanece no histórico. Use zero para anular a
         produção deste registro.
@@ -127,7 +127,7 @@ function CorrectionForm({
           </button>
           <button
             type="button"
-            className="min-h-12 px-3 underline"
+            className="min-h-10 px-3 underline"
             disabled={mutation.isPending}
             onClick={onClose}
           >
@@ -135,7 +135,7 @@ function CorrectionForm({
           </button>
         </div>
         {mutation.isError && (
-          <p role="alert" className="mt-3 text-red-700">
+          <p role="alert" className="mt-3 text-danger">
             {mutation.error.message} Feche e reabra a correção após atualizar o
             histórico caso o saldo tenha mudado.
           </p>
@@ -249,7 +249,7 @@ export function HistoryPage() {
         </label>
       </section>
       {invalidRange && (
-        <p role="alert" className="mb-4 text-red-700">
+        <p role="alert" className="mb-4 text-danger">
           A data inicial deve ser anterior ou igual à final.
         </p>
       )}
@@ -266,7 +266,7 @@ export function HistoryPage() {
           }}
         />
       )}
-      <p role="status" className="mb-4 text-emerald-800">
+      <p role="status" className="mb-4 text-success">
         {success}
       </p>
       {!invalidRange && !cascade.stale && (
@@ -278,55 +278,61 @@ export function HistoryPage() {
           />
           {query.isSuccess && (
             <>
-              <div className="grid gap-4">
+              <div className="history-list">
                 {query.data.items.map((record) => (
-                  <article className="panel p-5" key={record.id}>
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="eyebrow">
-                          {record.element_code} ·{' '}
-                          {dateLabel(record.execution_date)}
-                        </p>
-                        <h2 className="mt-2 text-lg font-semibold">
-                          {record.activity_name} · {record.element_name}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-600">
-                          {record.environment_name}
-                        </p>
-                      </div>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
+                  <article className="history-record" key={record.id}>
+                    <div className="min-w-0">
+                      <p className="mb-1 font-mono text-[11px] text-secondary">
+                        {record.element_code} ·{' '}
+                        {dateLabel(record.execution_date)}
+                      </p>
+                      <h2 className="text-sm font-semibold">
+                        {record.activity_name} · {record.element_name}
+                      </h2>
+                      <p className="mt-1 text-xs text-secondary">
+                        {record.environment_name} · {record.author_name}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <span
+                        className={`status-badge ${record.status === 'active' ? 'text-success' : 'text-warning'}`}
+                      >
                         {record.status === 'active' ? 'Válido' : 'Substituído'}
                       </span>
+                      <p className="record-quantity">
+                        {number(record.quantity)}{' '}
+                        <span className="text-xs font-normal text-secondary">
+                          {units[record.unit]}
+                        </span>
+                      </p>
                     </div>
-                    <p className="mt-4 font-semibold">
-                      {number(record.quantity)} {units[record.unit]}
-                    </p>
-                    <p className="mt-2 text-sm text-slate-600">
-                      Apontado por {record.author_name}
-                    </p>
-                    {record.observation && (
-                      <p className="mt-2 text-sm">
-                        Observação: {record.observation}
-                      </p>
-                    )}
-                    {record.correction_reason && (
-                      <p className="mt-2 text-sm">
-                        Justificativa: {record.correction_reason}
-                      </p>
-                    )}
-                    {record.replaces_id && (
-                      <p className="mt-2 break-all text-xs text-slate-500">
-                        Substitui o registro {record.replaces_id}
-                      </p>
-                    )}
-                    <p className="mt-2 break-all text-xs text-slate-500">
-                      Registro {record.id} ·{' '}
-                      {new Date(record.created_at).toLocaleString('pt-BR')}
-                    </p>
+                    <details className="record-details">
+                      <summary>Detalhes do apontamento</summary>
+                      <div className="grid gap-2 pb-2">
+                        {record.observation && (
+                          <p>Observação: {record.observation}</p>
+                        )}
+                        {record.correction_reason && (
+                          <p>Justificativa: {record.correction_reason}</p>
+                        )}
+                        {record.replaces_id && (
+                          <p className="break-all">
+                            Substitui o registro{' '}
+                            <code>{record.replaces_id}</code>
+                          </p>
+                        )}
+                        <p className="break-all">
+                          Registro <code>{record.id}</code>
+                        </p>
+                        <p>
+                          {new Date(record.created_at).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                    </details>
                     {record.status === 'active' &&
                       canEdit(access.data?.role) && (
                         <button
-                          className="mt-3 min-h-11 text-sm font-semibold underline"
+                          className="col-span-2 justify-self-start min-h-10 text-xs font-medium text-brand-ink"
                           type="button"
                           onClick={() => {
                             setEditing(record)
@@ -340,12 +346,12 @@ export function HistoryPage() {
                 ))}
               </div>
               {!query.data.total && (
-                <p className="panel p-8 text-slate-600">
+                <p className="panel p-8 text-secondary">
                   Nenhum apontamento encontrado para os filtros selecionados.
                 </p>
               )}
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-secondary">
                   {query.data.total} registros · Página {filters.page} de{' '}
                   {Math.max(1, Math.ceil(query.data.total / filters.page_size))}
                 </p>

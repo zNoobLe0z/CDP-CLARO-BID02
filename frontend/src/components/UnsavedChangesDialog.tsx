@@ -24,16 +24,16 @@ export function UnsavedChangesDialog({ dirty }: { dirty: boolean }) {
     <dialog
       ref={dialog}
       aria-labelledby="unsaved-title"
-      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl p-7 backdrop:bg-slate-900/50"
+      className="m-auto w-[calc(100%-2rem)] max-w-md bg-surface p-6 backdrop:bg-overlay"
       onCancel={(event) => {
         event.preventDefault()
         blocker.reset()
       }}
     >
-      <h2 id="unsaved-title" className="text-xl font-semibold">
+      <h2 id="unsaved-title" className="text-base font-semibold">
         Descartar o preenchimento?
       </h2>
-      <p className="my-4 text-slate-600">
+      <p className="my-4 text-secondary">
         Os dados ainda não foram salvos. Você pode continuar preenchendo ou sair
         desta tela.
       </p>

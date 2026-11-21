@@ -28,36 +28,46 @@ export function DashboardPage() {
     <>
       <PageHeader
         title="Dashboard"
-        description="Acompanhe o avanço físico ponderado e a produção registrada na obra."
+        description="Avanço físico e produção consolidada · CDP BI02 / CLARO"
       />
-      <section className="panel mb-6 p-5" aria-label="Filtros do dashboard">
-        <label
-          htmlFor="reference-date"
-          className="mb-5 grid max-w-xs gap-2 text-sm font-semibold"
-        >
-          Acumulado até
-          <input
-            id="reference-date"
-            type="date"
-            max={localDate()}
-            value={filters.reference_date}
-            onChange={(event) => setDate(event.target.value)}
-          />
-        </label>
-        <ScopeCascade
-          prefix="dashboard"
-          selection={selection}
-          cascade={cascade}
-          onChange={setSelection}
-        />
+      <section className="panel mb-5 p-4" aria-label="Filtros do dashboard">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <label
+            htmlFor="reference-date"
+            className="grid w-full max-w-52 gap-1.5 text-xs font-medium"
+          >
+            Acumulado até
+            <input
+              id="reference-date"
+              type="date"
+              max={localDate()}
+              value={filters.reference_date}
+              onChange={(event) => setDate(event.target.value)}
+            />
+          </label>
+          <p className="text-xs text-secondary">
+            {selection.floor
+              ? 'Consulta por frente de serviço'
+              : 'Consolidação da obra'}{' '}
+            · quantidades por unidade
+          </p>
+        </div>
+        <details className="mt-3 border-t border-line pt-3">
+          <summary className="min-h-10 text-xs font-medium text-brand-ink">
+            Detalhar por local e atividade
+          </summary>
+          <div className="mt-3">
+            <ScopeCascade
+              prefix="dashboard"
+              selection={selection}
+              cascade={cascade}
+              onChange={setSelection}
+            />
+          </div>
+        </details>
       </section>
-      <p className="mb-5 text-sm text-slate-500">
-        Use os níveis em sequência para detalhar o avanço, ou deixe a seleção
-        vazia para consultar a obra. Quantidades de unidades diferentes são
-        apresentadas separadamente.
-      </p>
       {!validDate ? (
-        <p role="alert" className="text-red-700">
+        <p role="alert" className="text-danger">
           Informe uma data válida até hoje.
         </p>
       ) : (
@@ -65,106 +75,170 @@ export function DashboardPage() {
           <QueryFeedback
             pending={query.isPending}
             error={error}
-            retry={() => {
-              void query.refetch()
-            }}
+            retry={() => void query.refetch()}
           />
           {data && !query.isError && !cascade.stale && (
             <>
-              <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {[
-                  [
-                    'Avanço físico',
-                    data.overall_percentage === null
+              <div className="kpi-grid panel mb-5">
+                <section className="kpi-cell">
+                  <h2 className="eyebrow">Avanço físico</h2>
+                  <p className="kpi-value">
+                    {data.overall_percentage === null
                       ? '—'
-                      : `${number(data.overall_percentage)}%`,
-                  ],
-                  ['Não iniciados', data.not_started_items],
-                  ['Em andamento', data.in_progress_items],
-                  [
-                    'Concluídos',
-                    `${data.completed_items} / ${data.total_items}`,
-                  ],
-                ].map(([label, value]) => (
-                  <section key={label} className="panel p-5">
-                    <h2 className="text-sm text-slate-600">{label}</h2>
-                    <p className="mt-3 text-3xl font-semibold tabular-nums">
-                      {value}
-                    </p>
-                  </section>
-                ))}
-              </div>
-              {!data.total_items ? (
-                <p className="panel p-7 text-slate-600">
-                  Nenhum item de escopo para os filtros selecionados.
-                </p>
-              ) : (
-                <section className="panel p-5 sm:p-7">
-                  <h2 className="mb-6 text-lg font-semibold">
-                    Avanço por disciplina
-                  </h2>
-                  <div className="grid gap-6">
-                    {data.disciplines.map((group) => (
-                      <div key={group.id}>
-                        <div className="mb-2 flex justify-between gap-3 text-sm">
-                          <span className="font-semibold">{group.name}</span>
-                          <span>{number(group.percentage)}%</span>
-                        </div>
-                        <progress
-                          aria-label={`Avanço de ${group.name}`}
-                          value={Number(group.percentage)}
-                          max={100}
-                          className="h-3 w-full accent-slate-800"
-                        />
-                        <p className="mt-2 text-xs text-slate-500">
-                          {group.completed_items} de {group.total_items}{' '}
-                          elementos concluídos
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-              <section className="panel mt-6 p-5 sm:p-7">
-                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="text-lg font-semibold">
-                    Produção por dia e atividade
-                  </h2>
-                  <Link
-                    to="/historico"
-                    className="min-h-11 py-3 text-sm font-semibold underline"
-                  >
-                    Consultar histórico
-                  </Link>
-                </div>
-                {!data.daily_production.length ? (
-                  <p className="text-sm text-slate-600">
-                    Nenhuma produção até esta data.
+                      : `${number(data.overall_percentage)}%`}
                   </p>
-                ) : (
-                  <ul className="divide-y divide-slate-200">
-                    {data.daily_production.map((row) => (
-                      <li
-                        key={`${row.date}:${row.activity_name}:${row.unit}`}
-                        className="flex flex-wrap justify-between gap-3 py-4 text-sm"
-                      >
-                        <span>
-                          {dateLabel(row.date)} · {row.activity_name}
-                        </span>
-                        <strong>
-                          {number(row.quantity)} {units[row.unit]}
-                        </strong>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-              <p className="mt-5 text-xs text-slate-500">
-                Valores válidos após correções, por data de execução. Atualizado
-                em {new Date(query.dataUpdatedAt).toLocaleTimeString('pt-BR')}.
-                O indicador representa execução física, sem avaliação de prazo
-                ou aprovação de qualidade.
-              </p>
+                  <progress
+                    aria-label="Avanço físico geral"
+                    value={Number(data.overall_percentage ?? 0)}
+                    max={100}
+                  />
+                  <p className="kpi-caption">
+                    Ponderado pelo escopo de produção
+                  </p>
+                </section>
+                <section className="kpi-cell">
+                  <h2 className="eyebrow">Não iniciados</h2>
+                  <p className="kpi-value">{data.not_started_items}</p>
+                  <p className="kpi-caption">
+                    <span className="status-badge text-secondary">
+                      A iniciar
+                    </span>
+                  </p>
+                </section>
+                <section className="kpi-cell">
+                  <h2 className="eyebrow">Em andamento</h2>
+                  <p className="kpi-value">{data.in_progress_items}</p>
+                  <p className="kpi-caption">
+                    <span className="status-badge text-info">
+                      Execução parcial
+                    </span>
+                  </p>
+                </section>
+                <section className="kpi-cell">
+                  <h2 className="eyebrow">Concluídos</h2>
+                  <p className="kpi-value">
+                    {data.completed_items}
+                    <span className="ml-2 text-lg font-normal text-secondary">
+                      / {data.total_items}
+                    </span>
+                  </p>
+                  <p className="kpi-caption">
+                    <span className="status-badge text-success">
+                      Execução integral
+                    </span>
+                  </p>
+                </section>
+              </div>
+              <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+                <section className="panel">
+                  <div className="section-heading">
+                    <h2>Avanço por disciplina</h2>
+                    <span className="font-mono text-xs text-secondary">%</span>
+                  </div>
+                  {!data.total_items ? (
+                    <p className="p-5 text-sm text-secondary">
+                      Nenhum item de escopo para os filtros selecionados.
+                    </p>
+                  ) : (
+                    <div className="divide-y divide-line">
+                      {data.disciplines.map((group) => (
+                        <div key={group.id} className="p-5">
+                          <div className="mb-3 flex justify-between gap-3 text-sm">
+                            <span className="font-medium">{group.name}</span>
+                            <strong className="font-mono text-sm font-medium">
+                              {number(group.percentage)}%
+                            </strong>
+                          </div>
+                          <progress
+                            aria-label={`Avanço de ${group.name}`}
+                            value={Number(group.percentage)}
+                            max={100}
+                          />
+                          <p className="mt-3 text-xs text-secondary">
+                            {group.completed_items} de {group.total_items}{' '}
+                            elementos concluídos
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="border-t border-line px-5 py-3 text-xs text-secondary">
+                    O peso representa esforço e relevância de produção.
+                  </p>
+                </section>
+                <section className="panel overflow-hidden">
+                  <div className="section-heading">
+                    <h2>Produção por dia e atividade</h2>
+                    <Link
+                      to="/historico"
+                      className="inline-flex min-h-10 items-center text-xs font-medium text-brand-ink"
+                    >
+                      Ver histórico →
+                    </Link>
+                  </div>
+                  {!data.daily_production.length ? (
+                    <p className="p-5 text-sm text-secondary">
+                      Nenhuma produção até esta data.
+                    </p>
+                  ) : (
+                    <div
+                      className="table-scroll border-0 rounded-none"
+                      role="region"
+                      aria-label="Produção consolidada"
+                      tabIndex={0}
+                    >
+                      <table className="data-grid">
+                        <caption className="sr-only">
+                          Produção diária por atividade, com unidades separadas
+                        </caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">Data</th>
+                            <th scope="col">Atividade</th>
+                            <th scope="col" className="numeric">
+                              Produção
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.daily_production.map((row) => (
+                            <tr
+                              key={`${row.date}:${row.activity_name}:${row.unit}`}
+                            >
+                              <td className="font-mono text-xs">
+                                {dateLabel(row.date)}
+                              </td>
+                              <td>{row.activity_name}</td>
+                              <td className="numeric font-medium">
+                                {number(row.quantity)}{' '}
+                                <span className="text-secondary">
+                                  {units[row.unit]}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  <p className="border-t border-line px-5 py-3 text-xs text-secondary">
+                    Metros quadrados, metros lineares e unidades não são somados
+                    entre si.
+                  </p>
+                </section>
+              </div>
+              <footer className="mt-5 flex flex-wrap justify-between gap-2 text-[11px] text-secondary">
+                <p>
+                  Execução física após correções · sem avaliação de prazo ou
+                  qualidade.
+                </p>
+                <p>
+                  Atualizado às{' '}
+                  <time>
+                    {new Date(query.dataUpdatedAt).toLocaleTimeString('pt-BR')}
+                  </time>
+                </p>
+              </footer>
             </>
           )}
         </>
