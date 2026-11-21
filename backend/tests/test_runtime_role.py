@@ -11,6 +11,7 @@ from app.main import create_app
 from app.settings import Settings, database_engine
 from tests.conftest import EDITOR
 from tests.test_production import PREFIX, headers, payload
+from tests.test_scope_import import PATH, body
 
 
 def test_api_works_without_admin_privileges_and_cannot_rewrite_originals(seeded):
@@ -39,6 +40,8 @@ def test_api_works_without_admin_privileges_and_cannot_rewrite_originals(seeded)
             headers=headers(),
         )
         assert created.status_code == 201, created.text
+        imported = browser.post(PATH, json=body(browser), headers=headers())
+        assert imported.status_code == 201, imported.text
         history = browser.get(PREFIX + "/production-records").json()["items"]
         record = next(item for item in history if item["quantity"] == "2.5")
         response = browser.post(

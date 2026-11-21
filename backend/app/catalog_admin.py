@@ -332,4 +332,16 @@ def router():
         ).all()
         return {"items": [view(row) for row in rows], "page": page}
 
+    from .scope_import import ImportCommit, ImportPreview, commit_import, plan
+
+    @api.post("/scope-import/preview")
+    def import_preview(body: ImportPreview, session: Db, member: Admin):
+        lock_project(session, member.project_id)
+        return plan(session, member.project_id, body.csv_text)[0]
+
+    @api.post("/scope-import")
+    def import_scope(body: ImportCommit, key: Key, session: Db, member: Admin):
+        result, status = commit_import(session, member, body, key)
+        return JSONResponse(result, status_code=status)
+
     return api
