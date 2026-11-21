@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+from uuid import UUID
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
@@ -195,7 +196,15 @@ def history(
                 for name in ("element_code", "element_name", "activity_name", "environment_name")
             ).casefold()
         ]
-        stmt = stmt.where(ProductionRecord.scope_item_id.in_(ids))
+        try:
+            record_id = UUID(search.strip())
+        except ValueError:
+            record_id = None
+        stmt = stmt.where(
+            (ProductionRecord.scope_item_id.in_(ids)) | (ProductionRecord.id == record_id)
+            if record_id
+            else ProductionRecord.scope_item_id.in_(ids)
+        )
     total = session.scalar(select(func.count()).select_from(stmt.subquery()))
     records = session.scalars(
         stmt.order_by(
