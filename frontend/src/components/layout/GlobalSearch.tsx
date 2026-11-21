@@ -39,6 +39,7 @@ export function GlobalSearch({
   function go(path: string) {
     onClose()
     navigate(path)
+    window.scrollTo(0, 0)
   }
   return (
     <dialog

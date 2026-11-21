@@ -30,7 +30,7 @@ export function UnsavedChangesDialog({ dirty }: { dirty: boolean }) {
         blocker.reset()
       }}
     >
-      <h2 id="unsaved-title" className="text-lg font-semibold">
+      <h2 id="unsaved-title" className="text-base font-semibold">
         Descartar o preenchimento?
       </h2>
       <p className="my-4 text-secondary">

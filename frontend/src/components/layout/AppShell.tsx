@@ -89,6 +89,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const links = availableNavigation(admin)
   const pathname = useLocation().pathname
   const current = links.find((item) => item.to === pathname)
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem('cdp.sidebar.v1') === 'collapsed'

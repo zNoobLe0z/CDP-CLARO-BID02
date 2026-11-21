@@ -14,7 +14,7 @@ import { WorkforcePage } from './features/workforce/WorkforcePage'
 import { CatalogAdminPage } from './features/catalog/CatalogAdminPage'
 import { CatalogPage } from './features/catalog/CatalogPage'
 
-function PendingPage({
+function NotFoundPage({
   title,
   description,
 }: {
@@ -24,14 +24,13 @@ function PendingPage({
   return (
     <>
       <PageHeader title={title} description={description} />
-      <section className="panel p-8">
-        <p className="eyebrow">PRÓXIMA ETAPA</p>
-        <h2 className="mt-3 text-xl font-semibold">
-          Esta área está em preparação
+      <section className="panel p-6">
+        <p className="eyebrow">Erro 404</p>
+        <h2 className="mt-3 text-base font-semibold">
+          Este endereço não está disponível
         </h2>
-        <p className="mt-2 max-w-xl text-secondary">
-          O primeiro fluxo disponível é o apontamento de produção. Esta página
-          será implementada após a validação desse fluxo.
+        <p className="mt-2 text-secondary">
+          Selecione uma área no menu para continuar o trabalho.
         </p>
         <NavLink className="button-primary mt-6 inline-flex" to="/producao">
           Ir para Produção
@@ -75,7 +74,7 @@ function Workspace() {
         <Route
           path="*"
           element={
-            <PendingPage
+            <NotFoundPage
               title="Página não encontrada"
               description="Verifique o endereço ou utilize o menu principal."
             />

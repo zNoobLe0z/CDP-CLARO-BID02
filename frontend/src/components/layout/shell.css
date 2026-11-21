@@ -135,7 +135,7 @@
   }
   .project-switch small {
     display: block;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.05em;
     color: var(--text-secondary);
@@ -168,7 +168,7 @@
   .nav-group-label {
     padding: 0 10px;
     margin: 10px 0 6px;
-    font-size: 10px;
+    font-size: 11px;
   }
   .nav-item {
     display: flex;
@@ -202,7 +202,7 @@
     gap: 8px;
   }
   .theme-control select {
-    min-height: 36px;
+    min-height: 40px;
     border-color: transparent;
     padding: 6px;
     font-size: 12px;
@@ -340,7 +340,7 @@
     .global-search-trigger kbd {
       margin-left: auto;
       font-family: var(--font-mono);
-      font-size: 9px;
+      font-size: 10px;
     }
     .topbar .topbar-primary {
       display: inline-flex;
@@ -372,5 +372,19 @@
     .sidebar-collapsed .sidebar-footer {
       padding-inline: 11px;
     }
+  }
+}
+
+@keyframes drawer-enter {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@layer components {
+  .mobile-drawer[open] {
+    animation: drawer-enter 150ms ease-out;
   }
 }

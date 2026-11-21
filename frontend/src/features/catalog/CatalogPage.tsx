@@ -42,7 +42,10 @@ export function CatalogPage() {
           prefix="catalog"
           selection={selection}
           cascade={cascade}
-          onChange={setSelection}
+          onChange={(next) => {
+            if (selectedItem) setParams({}, { replace: true })
+            setSelection(next)
+          }}
         />
       </section>
       <section className="panel mb-5 p-5">
@@ -72,6 +75,18 @@ export function CatalogPage() {
           preparar o catálogo na área Administrar.
         </p>
       </section>
+      {selectedItem && (
+        <button
+          type="button"
+          className="button-secondary mb-4"
+          onClick={() => {
+            setParams({}, { replace: true })
+            setSelection(emptySelection)
+          }}
+        >
+          Mostrar todo o escopo
+        </button>
+      )}
       <QueryFeedback
         pending={query.isPending}
         error={query.error}

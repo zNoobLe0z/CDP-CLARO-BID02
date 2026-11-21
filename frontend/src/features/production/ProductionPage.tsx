@@ -258,11 +258,11 @@ export function ProductionPage() {
           mutation.mutate({ batch, key: submission.current.key })
         }}
       >
-        <fieldset disabled={mutation.isPending} className="panel p-5 sm:p-5">
+        <fieldset disabled={mutation.isPending} className="panel p-5">
           <legend className="sr-only">Local e atividade</legend>
           <div className="mb-6 flex items-center gap-3">
             <span className="step">01</span>
-            <h2 className="text-lg font-semibold">Frente de serviço</h2>
+            <h2 className="text-base font-semibold">Frente de serviço</h2>
           </div>
           <ScopeCascade
             prefix="production"
@@ -279,13 +279,10 @@ export function ProductionPage() {
             <p>Escolha a atividade para visualizar os elementos disponíveis.</p>
           </div>
         ) : (
-          <section
-            className="panel mt-5 p-5 sm:p-5"
-            aria-busy={scope.isFetching}
-          >
+          <section className="panel mt-5 p-5" aria-busy={scope.isFetching}>
             <div className="mb-6 flex items-center gap-3">
               <span className="step">02</span>
-              <h2 className="text-lg font-semibold">Execução do dia</h2>
+              <h2 className="text-base font-semibold">Execução do dia</h2>
             </div>
             <fieldset disabled={mutation.isPending || !writable}>
               <legend className="sr-only">Data e elementos executados</legend>

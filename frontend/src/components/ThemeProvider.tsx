@@ -30,6 +30,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const theme = resolveTheme(preference, media.matches)
       document.documentElement.dataset.theme = theme
       document.documentElement.style.colorScheme = theme
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute('content', theme === 'dark' ? '#090B0E' : '#F8FAFC')
     }
     apply()
     media.addEventListener('change', apply)

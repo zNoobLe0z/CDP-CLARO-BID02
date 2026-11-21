@@ -59,7 +59,7 @@ function CorrectionForm({
       className="panel mb-6 border-brand-ink p-5"
       aria-labelledby="correction-heading"
     >
-      <h2 id="correction-heading" className="text-lg font-semibold">
+      <h2 id="correction-heading" className="text-base font-semibold">
         Corrigir {record.element_code}
       </h2>
       <p className="my-3 text-sm text-secondary">
@@ -278,55 +278,61 @@ export function HistoryPage() {
           />
           {query.isSuccess && (
             <>
-              <div className="grid gap-4">
+              <div className="history-list">
                 {query.data.items.map((record) => (
-                  <article className="panel p-5" key={record.id}>
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="eyebrow">
-                          {record.element_code} ·{' '}
-                          {dateLabel(record.execution_date)}
-                        </p>
-                        <h2 className="mt-2 text-lg font-semibold">
-                          {record.activity_name} · {record.element_name}
-                        </h2>
-                        <p className="mt-1 text-sm text-secondary">
-                          {record.environment_name}
-                        </p>
-                      </div>
-                      <span className="rounded bg-subtle px-3 py-1 text-xs font-semibold">
+                  <article className="history-record" key={record.id}>
+                    <div className="min-w-0">
+                      <p className="mb-1 font-mono text-[11px] text-secondary">
+                        {record.element_code} ·{' '}
+                        {dateLabel(record.execution_date)}
+                      </p>
+                      <h2 className="text-sm font-semibold">
+                        {record.activity_name} · {record.element_name}
+                      </h2>
+                      <p className="mt-1 text-xs text-secondary">
+                        {record.environment_name} · {record.author_name}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <span
+                        className={`status-badge ${record.status === 'active' ? 'text-success' : 'text-warning'}`}
+                      >
                         {record.status === 'active' ? 'Válido' : 'Substituído'}
                       </span>
+                      <p className="record-quantity">
+                        {number(record.quantity)}{' '}
+                        <span className="text-xs font-normal text-secondary">
+                          {units[record.unit]}
+                        </span>
+                      </p>
                     </div>
-                    <p className="mt-4 font-semibold">
-                      {number(record.quantity)} {units[record.unit]}
-                    </p>
-                    <p className="mt-2 text-sm text-secondary">
-                      Apontado por {record.author_name}
-                    </p>
-                    {record.observation && (
-                      <p className="mt-2 text-sm">
-                        Observação: {record.observation}
-                      </p>
-                    )}
-                    {record.correction_reason && (
-                      <p className="mt-2 text-sm">
-                        Justificativa: {record.correction_reason}
-                      </p>
-                    )}
-                    {record.replaces_id && (
-                      <p className="mt-2 break-all text-xs text-secondary">
-                        Substitui o registro {record.replaces_id}
-                      </p>
-                    )}
-                    <p className="mt-2 break-all text-xs text-secondary">
-                      Registro {record.id} ·{' '}
-                      {new Date(record.created_at).toLocaleString('pt-BR')}
-                    </p>
+                    <details className="record-details">
+                      <summary>Detalhes do apontamento</summary>
+                      <div className="grid gap-2 pb-2">
+                        {record.observation && (
+                          <p>Observação: {record.observation}</p>
+                        )}
+                        {record.correction_reason && (
+                          <p>Justificativa: {record.correction_reason}</p>
+                        )}
+                        {record.replaces_id && (
+                          <p className="break-all">
+                            Substitui o registro{' '}
+                            <code>{record.replaces_id}</code>
+                          </p>
+                        )}
+                        <p className="break-all">
+                          Registro <code>{record.id}</code>
+                        </p>
+                        <p>
+                          {new Date(record.created_at).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                    </details>
                     {record.status === 'active' &&
                       canEdit(access.data?.role) && (
                         <button
-                          className="mt-3 min-h-10 text-sm font-semibold underline"
+                          className="col-span-2 justify-self-start min-h-10 text-xs font-medium text-brand-ink"
                           type="button"
                           onClick={() => {
                             setEditing(record)

@@ -45,3 +45,7 @@ src/test/                  Preparação dos testes
 ```
 
 Contratos propostos: [Produção](../docs/api-production.md), [histórico](../docs/api-history.md), [dashboard e efetivo](../docs/api-dashboard-workforce.md). [Autenticação](../docs/authentication.md). Tarefas: [backlog](../docs/frontend-tasks.md).
+
+## Interface técnica e temas
+
+A aplicação utiliza tokens semânticos Light/Dark com Azul Petróleo, fontes locais Inter e JetBrains Mono e controles de tema persistidos. O shell inclui sidebar retrátil, drawer mobile, busca com Ctrl/Cmd+K e avisos do ambiente. Consulte [a documentação do redesign](../docs/technical-ui.md) para arquitetura, componentes e verificação.

@@ -233,8 +233,8 @@ export function WorkforcePage() {
         description="Registre o número de pessoas presentes por empresa e dia."
       />
       {canEdit(access.data?.role) && (
-        <section className="panel mb-6 p-5 sm:p-5">
-          <h2 className="mb-5 text-lg font-semibold">Contagem diária</h2>
+        <section className="panel mb-6 p-5">
+          <h2 className="mb-5 text-base font-semibold">Contagem diária</h2>
           <div className="mb-5 grid gap-4 sm:grid-cols-2">
             <label
               className="grid gap-2 text-sm font-semibold"
@@ -286,8 +286,8 @@ export function WorkforcePage() {
           </p>
         </section>
       )}
-      <section className="panel p-5 sm:p-5">
-        <h2 className="mb-5 text-lg font-semibold">Consulta de efetivo</h2>
+      <section className="panel p-5">
+        <h2 className="mb-5 text-base font-semibold">Consulta de efetivo</h2>
         <div className="mb-5 grid gap-4 sm:grid-cols-3">
           <label
             htmlFor="workforce-start"
