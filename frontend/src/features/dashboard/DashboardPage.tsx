@@ -1,62 +1,202 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { PageHeader } from '../../components/PageHeader'
+import { Download, SlidersHorizontal, Info } from 'lucide-react'
+import { config } from '../../lib/config'
+import { productionService as service } from '../production/service'
 import { ScopeCascade } from '../scope/ScopeCascade'
 import { useScopeCascade } from '../scope/useScopeCascade'
 import { emptySelection, scopeFilters } from '../scope/selection'
-
-import { QueryFeedback } from '../../components/QueryFeedback'
-import { productionService as service } from '../production/service'
 import { localDate, validExecutionDate } from '../production/measurement'
-import { dateLabel, number, units } from '../../lib/format'
+import { dateLabel } from '../../lib/format'
+import { periodStart, stagesCsv, type Period } from './analytics'
+import { Widget, WidgetState, EmptyWidget } from './widgets/Widget'
+import { KpiStrip } from './widgets/KpiStrip'
+import { PhysicalProgressChart } from './widgets/PhysicalProgressChart'
+import { DisciplineChart } from './widgets/DisciplineChart'
+import { WorkStagesTable } from './widgets/WorkStagesTable'
+import { ActivityFeed } from './widgets/ActivityFeed'
 
 export function DashboardPage() {
   const [date, setDate] = useState(localDate)
+  const [period, setPeriod] = useState<Period>('30d')
   const [selection, setSelection] = useState(emptySelection)
+  const [exportError, setExportError] = useState('')
+  const [controlsOpen, setControlsOpen] = useState(
+    () => window.matchMedia?.('(min-width: 768px)').matches ?? true,
+  )
+  useEffect(() => {
+    const media = window.matchMedia?.('(min-width: 768px)')
+    if (!media) return
+    const change = () => setControlsOpen(media.matches)
+    change()
+    media.addEventListener('change', change)
+    return () => media.removeEventListener('change', change)
+  }, [])
+
   const cascade = useScopeCascade(selection)
+  const valid = validExecutionDate(date)
+  const start = valid ? periodStart(date, period) : ''
   const filters = { reference_date: date, ...scopeFilters(selection) }
-  const validDate = validExecutionDate(filters.reference_date)
-  const query = useQuery({
-    queryKey: ['dashboard', filters],
+  const enabled = valid && !cascade.stale
+  const summary = useQuery({
+    queryKey: ['dashboard', 'summary', filters],
     queryFn: ({ signal }) => service.dashboard(filters, signal),
-    enabled: validDate && !cascade.stale,
+    enabled,
   })
-  const data = query.data
-  const error = query.error
+  const timeline = useQuery({
+    queryKey: ['dashboard', 'timeline', filters, start],
+    queryFn: ({ signal }) =>
+      service.timeline(
+        { ...filters, ...(start ? { start_date: start } : {}) },
+        signal,
+      ),
+    enabled,
+  })
+  const stages = useQuery({
+    queryKey: ['dashboard', 'stages', filters],
+    queryFn: ({ signal }) => service.stages(filters, signal),
+    enabled,
+  })
+  const feedFilters = {
+    ...scopeFilters(selection),
+    page: 1,
+    page_size: 5,
+    start_date: start,
+    end_date: date,
+    search: '',
+    status: '' as const,
+  }
+  const feed = useQuery({
+    queryKey: ['dashboard', 'feed', feedFilters],
+    queryFn: ({ signal }) => service.history(feedFilters, signal),
+    enabled,
+  })
+  const updated = Math.max(
+    summary.dataUpdatedAt,
+    timeline.dataUpdatedAt,
+    stages.dataUpdatedAt,
+    feed.dataUpdatedAt,
+  )
+  function reset() {
+    setSelection(emptySelection)
+    setPeriod('30d')
+    setDate(localDate())
+  }
+  function exportReport() {
+    if (!stages.data?.items.length) return
+    setExportError('')
+    try {
+      const url = URL.createObjectURL(
+        new Blob([stagesCsv(stages.data.items, date)], {
+          type: 'text/csv;charset=utf-8',
+        }),
+      )
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `frentes-${config.projectId}-${date}.csv`
+      document.body.append(link)
+      link.click()
+      link.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch {
+      setExportError('Não foi possível exportar o arquivo. Tente novamente.')
+    }
+  }
   return (
     <>
-      <PageHeader
-        title="Dashboard"
-        description="Avanço físico e produção consolidada · CDP BI02 / CLARO"
-      />
-      <section className="panel mb-5 p-4" aria-label="Filtros do dashboard">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <label
-            htmlFor="reference-date"
-            className="grid w-full max-w-52 gap-1.5 text-xs font-medium"
-          >
-            Acumulado até
-            <input
-              id="reference-date"
-              type="date"
-              max={localDate()}
-              value={filters.reference_date}
-              onChange={(event) => setDate(event.target.value)}
-            />
-          </label>
-          <p className="text-xs text-secondary">
-            {selection.floor
-              ? 'Consulta por frente de serviço'
-              : 'Consolidação da obra'}{' '}
-            · quantidades por unidade
+      <header className="engineering-heading">
+        <div>
+          <p className="eyebrow">Central de engenharia</p>
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-description">
+            Referência {valid ? dateLabel(date) : 'não definida'}
+            {updated
+              ? ` · atualizado às ${new Date(updated).toLocaleTimeString('pt-BR')}`
+              : ' · consultando indicadores'}
           </p>
         </div>
-        <details className="mt-3 border-t border-line pt-3">
-          <summary className="min-h-10 text-xs font-medium text-brand-ink">
-            Detalhar por local e atividade
+        <button
+          type="button"
+          className="button-secondary"
+          disabled={
+            !stages.data?.items.length || stages.isFetching || stages.isError
+          }
+          onClick={exportReport}
+        >
+          <Download size={15} aria-hidden="true" />
+          Exportar frentes (CSV)
+        </button>
+      </header>
+      <section
+        className="panel dashboard-context"
+        aria-label="Contexto e filtros operacionais"
+      >
+        <details
+          className="context-disclosure"
+          open={controlsOpen}
+          onToggle={(event) => setControlsOpen(event.currentTarget.open)}
+        >
+          <summary>
+            <span>Obra e período</span>
+            <span>
+              {period === 'all'
+                ? 'Acumulado'
+                : period === '30d'
+                  ? 'Últimos 30 dias'
+                  : period === 'month'
+                    ? 'Mês de referência'
+                    : 'Trimestre'}
+            </span>
           </summary>
-          <div className="mt-3">
+          <div className="dashboard-context-controls">
+            <label>
+              Obra
+              <select
+                defaultValue={config.projectId}
+                aria-description="Uma obra configurada neste ambiente"
+              >
+                <option value={config.projectId}>CDP BI02 · CLARO</option>
+              </select>
+            </label>
+            <label>
+              Período
+              <select
+                value={period}
+                onChange={(event) => setPeriod(event.target.value as Period)}
+              >
+                <option value="30d">Últimos 30 dias</option>
+                <option value="month">Mês de referência</option>
+                <option value="quarter">Trimestre de referência</option>
+                <option value="all">Acumulado da obra</option>
+              </select>
+            </label>
+            <label>
+              Referência
+              <input
+                type="date"
+                max={localDate()}
+                value={date}
+                onChange={(event) => setDate(event.target.value)}
+              />
+            </label>
+            <p className="context-caption">
+              {start && valid
+                ? `${dateLabel(start)} → ${dateLabel(date)}`
+                : 'Todo o histórico disponível'}
+              <span>KPIs e frentes acumulados na referência</span>
+            </p>
+          </div>
+        </details>
+        <details className="operational-filters">
+          <summary>
+            <SlidersHorizontal size={14} aria-hidden="true" />
+            Filtrar frente de serviço
+            {selection.floor && (
+              <span className="status-badge text-brand-ink">Filtro ativo</span>
+            )}
+          </summary>
+          <div className="pt-4">
             <ScopeCascade
               prefix="dashboard"
               selection={selection}
@@ -66,183 +206,119 @@ export function DashboardPage() {
           </div>
         </details>
       </section>
-      {!validDate ? (
-        <p role="alert" className="text-danger">
+      {exportError && (
+        <p role="alert" className="mb-4 text-danger">
+          {exportError}
+        </p>
+      )}
+      {!valid ? (
+        <p role="alert" className="panel p-5 text-danger">
           Informe uma data válida até hoje.
+        </p>
+      ) : cascade.stale ? (
+        <p role="alert" className="panel p-5 text-warning">
+          O contexto selecionado não está disponível.{' '}
+          <button className="underline" type="button" onClick={reset}>
+            Limpar filtros
+          </button>
         </p>
       ) : (
         <>
-          <QueryFeedback
-            pending={query.isPending}
-            error={error}
-            retry={() => void query.refetch()}
-          />
-          {data && !query.isError && !cascade.stale && (
-            <>
-              <div className="kpi-grid panel mb-5">
-                <section className="kpi-cell">
-                  <h2 className="eyebrow">Avanço físico</h2>
-                  <p className="kpi-value">
-                    {data.overall_percentage === null
-                      ? '—'
-                      : `${number(data.overall_percentage)}%`}
-                  </p>
-                  <progress
-                    aria-label="Avanço físico geral"
-                    value={Number(data.overall_percentage ?? 0)}
-                    max={100}
+          <KpiStrip summary={summary} timeline={timeline} />
+          <div className="dashboard-analytics-grid">
+            <Widget
+              title="Evolução do avanço físico"
+              subtitle="Acumulado ponderado · fechamento do dia"
+              className="timeline-widget"
+            >
+              <WidgetState query={timeline}>
+                <>
+                  {timeline.data &&
+                    (timeline.data.record_count ? (
+                      <PhysicalProgressChart data={timeline.data} />
+                    ) : (
+                      <EmptyWidget
+                        message="Nenhuma medição registrada para o período selecionado."
+                        onReset={reset}
+                      />
+                    ))}
+                </>
+              </WidgetState>
+            </Widget>
+            <Widget
+              title="Avanço por disciplina"
+              subtitle="Percentual acumulado na referência"
+              className="discipline-widget"
+            >
+              <WidgetState query={summary} kind="rows">
+                {summary.data?.disciplines.length ? (
+                  <DisciplineChart groups={summary.data.disciplines} />
+                ) : (
+                  <EmptyWidget
+                    message="Nenhuma disciplina encontrada neste contexto."
+                    onReset={reset}
                   />
-                  <p className="kpi-caption">
-                    Ponderado pelo escopo de produção
-                  </p>
-                </section>
-                <section className="kpi-cell">
-                  <h2 className="eyebrow">Não iniciados</h2>
-                  <p className="kpi-value">{data.not_started_items}</p>
-                  <p className="kpi-caption">
-                    <span className="status-badge text-secondary">
-                      A iniciar
-                    </span>
-                  </p>
-                </section>
-                <section className="kpi-cell">
-                  <h2 className="eyebrow">Em andamento</h2>
-                  <p className="kpi-value">{data.in_progress_items}</p>
-                  <p className="kpi-caption">
-                    <span className="status-badge text-info">
-                      Execução parcial
-                    </span>
-                  </p>
-                </section>
-                <section className="kpi-cell">
-                  <h2 className="eyebrow">Concluídos</h2>
-                  <p className="kpi-value">
-                    {data.completed_items}
-                    <span className="ml-2 text-lg font-normal text-secondary">
-                      / {data.total_items}
-                    </span>
-                  </p>
-                  <p className="kpi-caption">
-                    <span className="status-badge text-success">
-                      Execução integral
-                    </span>
-                  </p>
-                </section>
-              </div>
-              <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-                <section className="panel">
-                  <div className="section-heading">
-                    <h2>Avanço por disciplina</h2>
-                    <span className="font-mono text-xs text-secondary">%</span>
-                  </div>
-                  {!data.total_items ? (
-                    <p className="p-5 text-sm text-secondary">
-                      Nenhum item de escopo para os filtros selecionados.
-                    </p>
-                  ) : (
-                    <div className="divide-y divide-line">
-                      {data.disciplines.map((group) => (
-                        <div key={group.id} className="p-5">
-                          <div className="mb-3 flex justify-between gap-3 text-sm">
-                            <span className="font-medium">{group.name}</span>
-                            <strong className="font-mono text-sm font-medium">
-                              {number(group.percentage)}%
-                            </strong>
-                          </div>
-                          <progress
-                            aria-label={`Avanço de ${group.name}`}
-                            value={Number(group.percentage)}
-                            max={100}
-                          />
-                          <p className="mt-3 text-xs text-secondary">
-                            {group.completed_items} de {group.total_items}{' '}
-                            elementos concluídos
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <p className="border-t border-line px-5 py-3 text-xs text-secondary">
-                    O peso representa esforço e relevância de produção.
-                  </p>
-                </section>
-                <section className="panel overflow-hidden">
-                  <div className="section-heading">
-                    <h2>Produção por dia e atividade</h2>
-                    <Link
-                      to="/historico"
-                      className="inline-flex min-h-10 items-center text-xs font-medium text-brand-ink"
-                    >
-                      Ver histórico →
-                    </Link>
-                  </div>
-                  {!data.daily_production.length ? (
-                    <p className="p-5 text-sm text-secondary">
-                      Nenhuma produção até esta data.
-                    </p>
-                  ) : (
-                    <div
-                      className="table-scroll border-0 rounded-none"
-                      role="region"
-                      aria-label="Produção consolidada"
-                      tabIndex={0}
-                    >
-                      <table className="data-grid">
-                        <caption className="sr-only">
-                          Produção diária por atividade, com unidades separadas
-                        </caption>
-                        <thead>
-                          <tr>
-                            <th scope="col">Data</th>
-                            <th scope="col">Atividade</th>
-                            <th scope="col" className="numeric">
-                              Produção
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {data.daily_production.map((row) => (
-                            <tr
-                              key={`${row.date}:${row.activity_name}:${row.unit}`}
-                            >
-                              <td className="font-mono text-xs">
-                                {dateLabel(row.date)}
-                              </td>
-                              <td>{row.activity_name}</td>
-                              <td className="numeric font-medium">
-                                {number(row.quantity)}{' '}
-                                <span className="text-secondary">
-                                  {units[row.unit]}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                  <p className="border-t border-line px-5 py-3 text-xs text-secondary">
-                    Metros quadrados, metros lineares e unidades não são somados
-                    entre si.
-                  </p>
-                </section>
-              </div>
-              <footer className="mt-5 flex flex-wrap justify-between gap-2 text-[11px] text-secondary">
-                <p>
-                  Execução física após correções · sem avaliação de prazo ou
-                  qualidade.
-                </p>
-                <p>
-                  Atualizado às{' '}
-                  <time>
-                    {new Date(query.dataUpdatedAt).toLocaleTimeString('pt-BR')}
-                  </time>
-                </p>
-              </footer>
-            </>
-          )}
+                )}
+              </WidgetState>
+              <p className="widget-footnote">
+                Peso de produção representa esforço e relevância. Não representa
+                custo.
+              </p>
+            </Widget>
+          </div>
+          <div className="dashboard-operations-grid">
+            <Widget
+              title="Frentes de serviço"
+              subtitle="Ambiente × atividade · posição acumulada"
+              action={
+                <Link to="/cadastros" className="widget-link">
+                  Ver escopo →
+                </Link>
+              }
+            >
+              <WidgetState query={stages} kind="rows">
+                {stages.data?.items.length ? (
+                  <WorkStagesTable items={stages.data.items} />
+                ) : (
+                  <EmptyWidget
+                    message="Nenhuma frente de serviço encontrada."
+                    onReset={reset}
+                  />
+                )}
+              </WidgetState>
+            </Widget>
+            <Widget
+              title="Últimas movimentações"
+              subtitle="Apontamentos pela data de execução"
+              action={
+                <Link to="/historico" className="widget-link">
+                  Ver todas →
+                </Link>
+              }
+            >
+              <WidgetState query={feed} kind="rows">
+                {feed.data?.items.length ? (
+                  <ActivityFeed items={feed.data.items} />
+                ) : (
+                  <EmptyWidget
+                    message="Nenhum apontamento no período."
+                    onReset={reset}
+                  />
+                )}
+              </WidgetState>
+            </Widget>
+          </div>
         </>
       )}
+      <aside className="dashboard-availability">
+        <Info size={15} aria-hidden="true" />
+        <p>
+          <strong>Planejamento e financeiro sem base vinculada.</strong>{' '}
+          Comparação previsto × realizado, SPI/CPI, orçamento e caixa não estão
+          disponíveis nesta obra. Os indicadores exibidos representam execução
+          física após correções.
+        </p>
+      </aside>
     </>
   )
 }

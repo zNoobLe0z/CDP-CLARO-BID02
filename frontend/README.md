@@ -49,3 +49,7 @@ Contratos propostos: [Produção](../docs/api-production.md), [histórico](../do
 ## Interface técnica e temas
 
 A aplicação utiliza tokens semânticos Light/Dark com Azul Petróleo, fontes locais Inter e JetBrains Mono e controles de tema persistidos. O shell inclui sidebar retrátil, drawer mobile, busca com Ctrl/Cmd+K e avisos do ambiente. Consulte [a documentação do redesign](../docs/technical-ui.md) para arquitetura, componentes e verificação.
+
+## Central de engenharia
+
+O dashboard modular possui período de consulta, curva física acumulada, frentes ordenáveis, feed com links para registros e exportação CSV. Os widgets tratam loading, vazio e erro isoladamente. Veja [contratos, semântica temporal e validação](../docs/engineering-dashboard.md). Indicadores planejados e financeiros dependem de bases ainda não disponíveis na obra.

@@ -16,7 +16,13 @@ export function CatalogPage() {
   function setSearch(value: string) {
     setParams(value ? { buscar: value } : {}, { replace: true })
   }
-  const [selection, setSelection] = useState(emptySelection)
+  const [selection, setSelection] = useState(() => ({
+    ...emptySelection,
+    floor: params.get('andar') ?? '',
+    environment: params.get('ambiente') ?? '',
+    discipline: params.get('disciplina') ?? '',
+    activity: params.get('atividade') ?? '',
+  }))
   const cascade = useScopeCascade(selection)
   const query = useQuery({
     queryKey: ['catalog'],

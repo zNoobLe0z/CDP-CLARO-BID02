@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './components/layout/shell.css';
+@import './features/dashboard/dashboard.css';
 
 @font-face {
   font-family: 'Inter Variable';

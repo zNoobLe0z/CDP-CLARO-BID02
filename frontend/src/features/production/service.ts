@@ -2,7 +2,12 @@ import { config } from '../../lib/config'
 import { request } from '../../lib/api'
 import { createDemoService } from './demo-service'
 import type { BatchResult, Option, ProductionService, ScopeItem } from './types'
-import type { DashboardData, DashboardService } from '../dashboard/types'
+import type {
+  DashboardData,
+  DashboardService,
+  DashboardStages,
+  DashboardTimeline,
+} from '../dashboard/types'
 import type {
   CatalogItem,
   HistoryPage,
@@ -16,6 +21,16 @@ const query = (values: Record<string, string>) =>
 const list = async <T>(path: string, signal?: AbortSignal) =>
   (await request<{ items: T[] }>(path, { signal })).items
 const api: ProductionService & HistoryService & DashboardService = {
+  timeline: (filters, signal) =>
+    request<DashboardTimeline>(
+      `${project}/dashboard/timeline?${new URLSearchParams(Object.entries(filters).filter(([, value]) => Boolean(value))).toString()}`,
+      { signal },
+    ),
+  stages: (filters, signal) =>
+    request<DashboardStages>(
+      `${project}/dashboard/stages?${new URLSearchParams(Object.entries(filters).filter(([, value]) => Boolean(value))).toString()}`,
+      { signal },
+    ),
   dashboard: (filters, signal) =>
     request<DashboardData>(
       `${project}/dashboard?${new URLSearchParams(Object.entries(filters).filter(([, value]) => Boolean(value))).toString()}`,

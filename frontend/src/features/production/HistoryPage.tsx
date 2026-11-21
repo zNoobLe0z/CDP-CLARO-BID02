@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router'
 import { ScopeCascade } from '../scope/ScopeCascade'
 import { useScopeCascade } from '../scope/useScopeCascade'
 import { emptySelection, scopeFilters } from '../scope/selection'
@@ -155,7 +156,11 @@ const initialFilters: HistoryFilters = {
 }
 export function HistoryPage() {
   const access = useProjectAccess()
-  const [filters, setFilters] = useState(initialFilters)
+  const [params] = useSearchParams()
+  const [filters, setFilters] = useState(() => ({
+    ...initialFilters,
+    search: params.get('registro') ?? '',
+  }))
   const [selection, setSelection] = useState(emptySelection)
   const cascade = useScopeCascade(selection)
   const scopedFilters = { ...filters, ...scopeFilters(selection) }

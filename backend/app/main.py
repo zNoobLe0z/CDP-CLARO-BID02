@@ -12,7 +12,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 
-from . import mutations, queries
+from . import dashboard_queries, mutations, queries
 from .auth import db, editor, membership
 from .errors import DomainError, invalid, missing
 from .models import Company, Membership, Workforce, WorkforceRevision
@@ -256,6 +256,27 @@ def create_app(settings: Settings | None = None, engine=None, auth_http=None):
         if reference_date > today():
             invalid("A data de referência não pode estar no futuro.")
         return queries.dashboard(session, project_id, filters, reference_date)
+
+    @app.get(prefix + "/dashboard/timeline", tags=["Dashboard"])
+    def dashboard_timeline(
+        project_id: str,
+        reference_date: IsoDate,
+        session: Db,
+        _member: Member,
+        filters: Filters,
+        start_date: IsoDate | None = None,
+    ):
+        if reference_date > today():
+            invalid("A data de referência não pode estar no futuro.")
+        return dashboard_queries.timeline(session, project_id, filters, reference_date, start_date)
+
+    @app.get(prefix + "/dashboard/stages", tags=["Dashboard"])
+    def dashboard_stages(
+        project_id: str, reference_date: IsoDate, session: Db, _member: Member, filters: Filters
+    ):
+        if reference_date > today():
+            invalid("A data de referência não pode estar no futuro.")
+        return dashboard_queries.stages(session, project_id, filters, reference_date)
 
     @app.get(prefix + "/companies", tags=["Workforce"])
     def companies(project_id: str, session: Db, _member: Member):
